@@ -1,0 +1,254 @@
+.modal-dialog.social-login-dialog {
+  width: min(920px, calc(100vw - 28px)) !important;
+  max-width: min(920px, calc(100vw - 28px)) !important;
+}
+
+.social-login-dialog .modal-content {
+  width: 100%;
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  box-shadow: 0 34px 90px rgba(15, 23, 42, 0.34);
+  overflow: hidden;
+}
+
+.socialLoginShell {
+  display: grid;
+  grid-template-columns: 0.95fr 1.05fr;
+  min-height: 560px;
+  background: #ffffff;
+}
+
+.socialLoginBrand {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 2rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.32), transparent 9rem),
+    radial-gradient(circle at 88% 84%, rgba(20, 184, 166, 0.5), transparent 13rem),
+    linear-gradient(145deg, #2563eb 0%, #155e75 52%, #0f172a 100%);
+  color: #ffffff;
+}
+
+.socialLoginBrand::after {
+  content: "";
+  position: absolute;
+  right: -5rem;
+  top: 8rem;
+  z-index: -1;
+  width: 18rem;
+  height: 18rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 3rem rgba(255, 255, 255, 0.035);
+}
+
+.socialLoginBrandCopy span {
+  display: inline-flex;
+  margin-bottom: 0.85rem;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #cffafe;
+  font-size: 0.75rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.socialLoginBrandCopy h2 {
+  max-width: 22rem;
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 950;
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.socialLoginBrandCopy p {
+  max-width: 23rem;
+  margin: 1rem 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.socialLoginStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.socialLoginStats div {
+  padding: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.socialLoginStats strong,
+.socialLoginStats span {
+  display: block;
+}
+
+.socialLoginStats strong {
+  font-size: 1.5rem;
+  font-weight: 950;
+}
+
+.socialLoginStats span {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.socialLoginPanel {
+  position: relative;
+  padding: 2.2rem;
+}
+
+.socialLoginClose {
+  position: absolute;
+  top: 1.05rem;
+  right: 1.05rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 1.65rem;
+  line-height: 1;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.socialLoginClose:hover {
+  background: #e2e8f0;
+  color: #172033;
+  transform: rotate(4deg);
+}
+
+.socialLoginHeader {
+  margin: 1.2rem 0 1.8rem;
+}
+
+.socialLoginHeader h1 {
+  margin: 1.4rem 0 0.35rem;
+  color: var(--social-text);
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.socialLoginHeader p {
+  margin: 0;
+  color: var(--social-muted);
+  font-weight: 650;
+}
+
+.socialLoginPanel .form-label {
+  color: var(--social-text);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.socialInputWrap {
+  position: relative;
+}
+
+.socialInputIcon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  z-index: 2;
+  transform: translateY(-50%);
+  color: var(--social-primary);
+  font-weight: 900;
+}
+
+.socialInputWrap .form-control {
+  min-height: 3.2rem;
+  border: 1px solid var(--social-border);
+  border-radius: 16px;
+  padding-left: 2.65rem;
+  background: #f8fbff;
+  color: var(--social-text);
+  font-weight: 650;
+  box-shadow: none;
+}
+
+.socialInputWrap .form-control:focus {
+  border-color: rgba(37, 99, 235, 0.55);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.socialLoginMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1rem 0 1.15rem;
+  color: var(--social-muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.socialLoginMeta label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.socialLoginMeta button {
+  border: 0;
+  background: transparent;
+  color: var(--social-primary);
+  font-weight: 850;
+}
+
+.socialLoginSubmit {
+  width: 100%;
+  min-height: 3.25rem;
+  border-radius: 16px !important;
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.socialLoginCreate {
+  width: 100%;
+  margin-top: 0.85rem;
+  color: var(--social-primary);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 760px) {
+  .socialLoginShell {
+    grid-template-columns: 1fr;
+  }
+
+  .socialLoginBrand {
+    min-height: 15rem;
+  }
+
+  .socialLoginBrandCopy h2 {
+    font-size: 1.8rem;
+  }
+
+  .socialLoginStats {
+    display: none;
+  }
+
+  .socialLoginPanel {
+    padding: 1.35rem;
+  }
+
+  .socialLoginHeader {
+    margin-top: 2rem;
+  }
+}

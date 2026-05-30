@@ -1,0 +1,17 @@
+.feed{
+    flex:5.5;
+    min-width: 0;
+}
+
+.feedWrapper{
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+@media screen and (max-width: 900px) {
+    .feedWrapper {
+        gap: 16px;
+    }
+}

@@ -1,0 +1,93 @@
+.appLogo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.72rem;
+  color: var(--social-text, #152033);
+}
+
+.appLogoMark {
+  display: inline-grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.86), transparent 0.72rem),
+    linear-gradient(135deg, #2563eb 0%, #14b8a6 58%, #8b5cf6 100%);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.25);
+}
+
+.appLogoMark svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.appLogoMark .wing {
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+.appLogoMark .wingRight,
+.appLogoMark .wingRightLower {
+  fill: rgba(236, 253, 245, 0.96);
+}
+
+.appLogoMark .body {
+  fill: #0f172a;
+  opacity: 0.82;
+}
+
+.appLogoMark .antenna {
+  fill: none;
+  stroke: #0f172a;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.82;
+}
+
+.appLogoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+.appLogoName {
+  color: inherit;
+  font-size: 1.28rem;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.appLogoTagline {
+  margin-top: 0.18rem;
+  color: var(--social-muted, #65758b);
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+.appLogoCompact {
+  gap: 0.55rem;
+}
+
+.appLogoCompact .appLogoMark {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.8rem;
+}
+
+.appLogoCompact .appLogoMark svg {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.appLogoCompact .appLogoName {
+  font-size: 1.16rem;
+}
+
+.appLogoLight {
+  color: #ffffff;
+}
+
+.appLogoLight .appLogoTagline {
+  color: #94a3b8;
+}

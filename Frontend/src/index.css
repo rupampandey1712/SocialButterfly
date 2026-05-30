@@ -1,0 +1,61 @@
+/* src/tailwind.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --social-bg: #eef4fb;
+  --social-panel: rgba(255, 255, 255, 0.94);
+  --social-panel-strong: #ffffff;
+  --social-border: #dde8f3;
+  --social-text: #152033;
+  --social-muted: #65758b;
+  --social-primary: #2563eb;
+  --social-primary-dark: #1d4ed8;
+  --social-accent: #14b8a6;
+  --social-danger: #ef4444;
+  --social-shadow: 0 18px 45px rgba(21, 32, 51, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 28rem),
+    radial-gradient(circle at 88% 8%, rgba(20, 184, 166, 0.12), transparent 26rem),
+    linear-gradient(180deg, #f8fbff 0%, var(--social-bg) 100%);
+  color: var(--social-text);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+.modal-content {
+  border: 1px solid var(--social-border);
+  border-radius: 18px;
+  box-shadow: 0 26px 70px rgba(21, 32, 51, 0.22);
+}
+
+.modal-header,
+.modal-footer {
+  border-color: var(--social-border);
+}
+
+.btn-primary,
+.shareButton {
+  border: 0;
+  background: linear-gradient(135deg, var(--social-primary), var(--social-accent));
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+}
+
+.btn-primary:hover,
+.shareButton:hover {
+  background: linear-gradient(135deg, var(--social-primary-dark), #0f766e);
+}
+

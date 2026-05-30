@@ -1,0 +1,227 @@
+.topbarContainer {
+  min-height: 68px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--social-border);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  padding: 0 22px;
+  box-shadow: 0 12px 34px rgba(21, 32, 51, 0.06);
+}
+
+.topbarLeft {
+  flex: 2.3;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--social-primary);
+  cursor: pointer;
+  letter-spacing: 0;
+}
+
+.topbarLeft a {
+  display: inline-flex;
+  color: inherit;
+}
+
+.topbarLeft .appLogoName {
+  color: var(--social-primary);
+}
+
+.topbarCenter {
+  flex: 4.5;
+  position: relative;
+}
+
+.searchbar {
+  width: 100%;
+  height: 44px;
+  background-color: #f3f7fb;
+  border: 1px solid #dce8f4;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.searchbar:focus-within {
+  background: #ffffff;
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.09);
+}
+
+.searchIcon {
+  font-size: 20px !important;
+  color: var(--social-primary);
+  margin-right: 8px;
+}
+
+.searchInput {
+  border: none;
+  width: 100%;
+  background: transparent;
+  color: var(--social-text);
+  font-size: 14px;
+}
+
+.searchInput:focus {
+  outline: none;
+}
+
+.topbarRight {
+  flex: 4.2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  color: var(--social-text);
+}
+
+.topbarLinks {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topbarLink {
+  color: var(--social-muted);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.topbarLink:hover {
+  color: var(--social-primary);
+}
+
+.topbarLinks .btn {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.topbarIcons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbarIconItem {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #f3f7fb;
+  color: var(--social-primary);
+  cursor: pointer;
+  position: relative;
+  transition: transform 160ms ease, background-color 160ms ease;
+}
+
+.topbarIconItem:hover {
+  background: #e7f0fb;
+  transform: translateY(-1px);
+}
+
+.topbarIconBadge {
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  background-color: var(--social-danger);
+  border-radius: 50%;
+  color: white;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.topbarImg {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 3px solid #ffffff;
+  box-shadow: 0 8px 18px rgba(21, 32, 51, 0.14);
+}
+
+.topbarCenter .mt-60 {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  z-index: 20;
+}
+
+.topbarCenter .card {
+  border: 1px solid var(--social-border);
+  border-radius: 16px;
+  box-shadow: var(--social-shadow);
+  overflow: hidden;
+}
+
+.topbarCenter .card-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--social-border);
+}
+
+.topbarCenter .card-img-top {
+  border-radius: 12px 12px 0 0;
+}
+
+@media screen and (max-width: 768px) {
+  .topbarContainer {
+    min-height: auto;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .topbarLeft {
+    flex: 1 0 auto;
+  }
+
+  .topbarCenter {
+    order: 3;
+    flex: 1 0 100%;
+  }
+
+  .topbarRight {
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .topbarLinks {
+    display: none;
+  }
+
+  .logo {
+    font-size: 19px;
+  }
+
+  .topbarImg {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .topbarLeft {
+    flex: 2;
+  }
+}

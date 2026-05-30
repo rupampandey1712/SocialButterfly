@@ -1,0 +1,9 @@
+.calendar-container {
+  width: 100%;
+}
+
+.tile-content {
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
