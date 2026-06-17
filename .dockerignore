@@ -1,0 +1,12 @@
+.git
+.gitignore
+
+**/bin/
+**/obj/
+
+Frontend/node_modules/
+Frontend/dist/
+Frontend/.vite/
+
+Dockerfile
+README.md
