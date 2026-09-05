@@ -38,6 +38,7 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
 builder.Services.AddScoped<ILikeService, LikeService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddSingleton<IGenAiClientService, GenAiClientService>();
 
 builder.Services.AddSwaggerGen(options =>
 {

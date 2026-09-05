@@ -1,0 +1,10 @@
+node_modules/
+build/
+dist/
+.git/
+.gitignore
+Dockerfile
+vite-dev.err.log
+vite-dev.out.log
+npm-debug.log*
+*.local

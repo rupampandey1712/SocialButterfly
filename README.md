@@ -133,6 +133,44 @@ Install the following before running the project:
    http://localhost:3000
    ```
 
+## Docker Setup
+
+The repository includes Dockerfiles for the ASP.NET Core API, the React/Vite frontend, and the optional Python GenAI gRPC service.
+
+1. Create a local environment file:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Update `.env` with a strong SQL Server password and production-safe JWT secret.
+
+3. Build and start the core stack:
+
+   ```bash
+   docker compose up --build
+   ```
+
+4. Open the frontend:
+
+   ```text
+   http://localhost:3000
+   ```
+
+   The frontend container serves the static Vite build through nginx and proxies `/api`, `/Images`, `/posts`, and `/swagger` to the backend container.
+
+5. If this is a fresh database, apply Entity Framework migrations against the SQL Server container before using the app:
+
+   ```bash
+   dotnet ef database update --project Backend/SocialMediaWeb.csproj --connection "Server=localhost,1433;Database=SocialMedia;User Id=sa;Password=Change_this_password_123!;TrustServerCertificate=True;Encrypt=False;"
+   ```
+
+6. Start the optional GenAI service when needed:
+
+   ```bash
+   docker compose --profile genai up --build
+   ```
+
 ## Available Frontend Scripts
 
 Run these commands inside the `Frontend` folder:
@@ -163,6 +201,12 @@ For production, move sensitive values such as database credentials and JWT secre
 - Uploaded images are stored under `wwwroot/Images`.
 - Uploaded post files are stored under `wwwroot/posts`.
 - CORS is configured to allow the React frontend to call the API.
+
+## GenAI Integration Notes
+
+For the proposed Python GenAI integration with NVIDIA NIM and gRPC, see:
+
+- [gRPC GenAI Integration Guide](docs/GRPC_GENAI_INTEGRATION.md)
 
 ## Build
 

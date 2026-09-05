@@ -1,0 +1,65 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Change_this_password_123!}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Con: Server=sqlserver,1433;Database=SocialMedia;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Change_this_password_123!};TrustServerCertificate=True;Encrypt=False;
+      JWT__ValidAudience: ${JWT_VALID_AUDIENCE:-http://localhost:3000}
+      JWT__ValidIssuer: ${JWT_VALID_ISSUER:-http://localhost:5152}
+      JWT__Secret: ${JWT_SECRET:-JWTRefreshTokenHIGHsecuredPasswordVVVp1OH7Xzyr}
+      JWT__TokenValidityInMinutes: ${JWT_TOKEN_VALIDITY_IN_MINUTES:-60}
+      JWT__RefreshTokenValidityInDays: ${JWT_REFRESH_TOKEN_VALIDITY_IN_DAYS:-7}
+      GenAI__GrpcAddress: ${GENAI_GRPC_ADDRESS:-http://genai:50051}
+    ports:
+      - "5152:8080"
+    depends_on:
+      - sqlserver
+    volumes:
+      - backend-wwwroot:/app/wwwroot
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_ORIGIN: ""
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  genai:
+    profiles:
+      - genai
+    build:
+      context: ./Backend/GenAI
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NVIDIA_API_KEY: ${NVIDIA_API_KEY:-}
+      NIM_BASE_URL: ${NIM_BASE_URL:-https://integrate.api.nvidia.com/v1}
+      NIM_MODEL: ${NIM_MODEL:-}
+      GENAI_GRPC_PORT: 50051
+    expose:
+      - "50051"
+
+volumes:
+  sqlserver-data:
+  backend-wwwroot:

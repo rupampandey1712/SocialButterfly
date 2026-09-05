@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "SocialMediaWeb.Protos";
+
+package genai;
+
+service GenAiService {
+  rpc GenerateText (GenerateTextRequest) returns (GenerateTextResponse);
+}
+
+message GenerateTextRequest {
+  string prompt = 1;
+}
+
+message GenerateTextResponse {
+  string text = 1;
+}
