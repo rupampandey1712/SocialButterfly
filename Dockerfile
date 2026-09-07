@@ -3,6 +3,9 @@
 FROM node:22-alpine AS frontend-build
 WORKDIR /src/Frontend
 
+ARG VITE_API_ORIGIN=""
+ENV VITE_API_ORIGIN=${VITE_API_ORIGIN}
+
 COPY Frontend/package*.json ./
 RUN npm ci
 
@@ -25,6 +28,9 @@ RUN dotnet publish Backend/SocialMediaWeb.csproj \
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
+
+LABEL org.opencontainers.image.title="SocialMediaWeb" \
+      org.opencontainers.image.description="Combined React frontend and ASP.NET Core backend"
 
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080

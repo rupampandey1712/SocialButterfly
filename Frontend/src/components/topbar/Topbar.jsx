@@ -134,10 +134,11 @@ export default function Topbar() {
             <Person />
             <span className="topbarIconBadge"></span>
           </div>
-          <div className="topbarIconItem">
-            <Chat />
-            <span className="topbarIconBadge"> </span>
-          </div>
+          <Link to="/chat" aria-label="Open chats">
+            <div className="topbarIconItem">
+              <Chat />
+            </div>
+          </Link>
           <div className="topbarIconItem">
             <Link to="/requests">
               <NotificationsActiveIcon sx={{ color: common['white'] }} />

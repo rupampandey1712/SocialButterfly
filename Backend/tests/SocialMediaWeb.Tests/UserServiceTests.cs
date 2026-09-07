@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.FileProviders;
 using SocialMediaWeb.Dtos;
 using SocialMediaWeb.Models;
 using SocialMediaWeb.Services.Classes;
+using SocialMediaWeb.Services.Interfaces;
 
 namespace SocialMediaWeb.Tests;
 
@@ -84,17 +83,30 @@ public class UserServiceTests
         return new UserService(
             context,
             configuration,
-            new TestWebHostEnvironment(),
+            new FakeBlobStorageService(),
             new HttpContextAccessor());
     }
 
-    private sealed class TestWebHostEnvironment : IWebHostEnvironment
+    /// <summary>
+    /// In-memory fake for IBlobStorageService used in unit tests.
+    /// Returns deterministic URLs without requiring Azure Storage or Azurite.
+    /// </summary>
+    private sealed class FakeBlobStorageService : IBlobStorageService
     {
-        public string ApplicationName { get; set; } = "SocialMediaWeb.Tests";
-        public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
-        public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
-        public string EnvironmentName { get; set; } = "Development";
-        public string WebRootPath { get; set; } = Path.Combine(AppContext.BaseDirectory, "wwwroot");
-        public IFileProvider WebRootFileProvider { get; set; } = new NullFileProvider();
+        public Task<string> UploadAsync(IFormFile file, string containerName)
+        {
+            var blobName = $"{Path.GetFileNameWithoutExtension(file.FileName)}_{DateTime.UtcNow.Ticks}{Path.GetExtension(file.FileName)}";
+            return Task.FromResult($"http://localhost:10000/devstoreaccount1/{containerName}/{blobName}");
+        }
+
+        public Task DeleteAsync(string blobUrl, string containerName)
+        {
+            return Task.CompletedTask;
+        }
+
+        public string GetBlobUrl(string containerName, string blobName)
+        {
+            return $"http://localhost:10000/devstoreaccount1/{containerName}/{blobName}";
+        }
     }
 }

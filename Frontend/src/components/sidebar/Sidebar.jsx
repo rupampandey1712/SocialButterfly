@@ -12,6 +12,7 @@ import {
 } from "@mui/icons-material";
 import { Users } from "../../dummyData";
 import CloseFriend from "../closeFriend/CloseFriend";
+import { Link } from "react-router-dom";
 
 export default function Sidebar() {
   return (
@@ -23,8 +24,10 @@ export default function Sidebar() {
             <span className="sidebarListItemText">Feed</span>
           </li>
           <li className="sidebarListItem">
-            <Chat className="sidebarIcon" />
-            <span className="sidebarListItemText">Chats</span>
+            <Link to="/chat" className="sidebarListLink">
+              <Chat className="sidebarIcon" />
+              <span className="sidebarListItemText">Chats</span>
+            </Link>
           </li>
           <li className="sidebarListItem">
             <PlayCircleFilledOutlined className="sidebarIcon" />

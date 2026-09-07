@@ -13,6 +13,7 @@ SocialMediaWeb is a full-stack social media web application built with an ASP.NE
 - Admin dashboard with pages for dashboard, settings, tables, maps, and calendar
 - Swagger UI for API testing in development
 - SQL Server database integration with Entity Framework Core
+- Asynchronous direct chat backed by Aspire-managed Azure Service Bus
 
 ## Tech Stack
 
@@ -135,7 +136,7 @@ Install the following before running the project:
 
 ## Docker Setup
 
-The repository includes Dockerfiles for the ASP.NET Core API, the React/Vite frontend, and the optional Python GenAI gRPC service.
+The root `Dockerfile` creates one application image (`ramp1712/socialmediaweb:latest`) containing both the React/Vite frontend and the ASP.NET Core backend. The compiled frontend is copied into the backend `wwwroot`, so a single ASP.NET Core container serves the UI, API, Swagger, and uploaded static files at port 8080. SQL Server remains a separate infrastructure dependency; the Python GenAI gRPC service is optional.
 
 1. Create a local environment file:
 
@@ -151,13 +152,13 @@ The repository includes Dockerfiles for the ASP.NET Core API, the React/Vite fro
    docker compose up --build
    ```
 
-4. Open the frontend:
+4. Open the combined application:
 
    ```text
-   http://localhost:3000
+   http://localhost:8080
    ```
 
-   The frontend container serves the static Vite build through nginx and proxies `/api`, `/Images`, `/posts`, and `/swagger` to the backend container.
+   The same container serves the React application, `/api`, `/Images`, `/posts`, and, in the development Compose configuration, `/swagger`.
 
 5. If this is a fresh database, apply Entity Framework migrations against the SQL Server container before using the app:
 
@@ -170,6 +171,17 @@ The repository includes Dockerfiles for the ASP.NET Core API, the React/Vite fro
    ```bash
    docker compose --profile genai up --build
    ```
+
+## Docker Hub image
+
+The published combined application image is `ramp1712/socialmediaweb:latest`.
+
+```bash
+docker pull ramp1712/socialmediaweb:latest
+docker compose up
+```
+
+For the complete build, validation, replacement, and publishing procedure, see the Docker deployment guide in `docs`.
 
 ## Available Frontend Scripts
 
@@ -201,6 +213,23 @@ For production, move sensitive values such as database credentials and JWT secre
 - Uploaded images are stored under `wwwroot/Images`.
 - Uploaded post files are stored under `wwwroot/posts`.
 - CORS is configured to allow the React frontend to call the API.
+
+### Durable chat delivery
+
+The Aspire AppHost creates a `chat-messages` Service Bus queue and launches a .NET
+isolated Durable Functions project to process it. `POST /api/chat` accepts an
+authenticated sender's message and returns `202 Accepted`; the durable orchestration
+retries SQL persistence and the unique message id prevents duplicate delivery. A stable
+client-generated `clientMessageId` is supported for retry deduplication. Conversation
+endpoints are authenticated and use the user id in the JWT:
+
+- `POST /api/chat` with `{ "receiverId": 42, "content": "Hi", "clientMessageId": "<optional-guid>" }`
+- `GET /api/chat/with/42?limit=50`
+- `PUT /api/chat/with/42/read`
+
+Apply the `AddChatMessages` EF migration before using chat against an existing database.
+The React UI is available at `/chat`. See [the durable chat implementation guide](docs/DURABLE_CHAT_ARCHITECTURE.md)
+for the full Azure Storage, Functions, Service Bus, Aspire, Docker, and code-path design.
 
 ## GenAI Integration Notes
 

@@ -1,0 +1,13 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+    "ServiceBusConnection": "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
+    "ChatQueueName": "chat-messages",
+    "DurableTaskHubName": "chatdelivery"
+  },
+  "ConnectionStrings": {
+    "Con": "Data Source=YOUR_SERVER;Initial Catalog=SocialMedia;Integrated Security=True;Encrypt=false;"
+  }
+}

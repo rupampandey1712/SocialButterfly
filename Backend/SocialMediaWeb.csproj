@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -28,6 +28,12 @@
     </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="10.0.1" />
+    <PackageReference Include="Aspire.Azure.Storage.Blobs" Version="9.2.0" />
+    <PackageReference Include="Aspire.Azure.Messaging.ServiceBus" Version="9.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="SocialMediaWeb.ServiceDefaults\SocialMediaWeb.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -43,6 +49,15 @@
     <Compile Remove="tests\**\*.cs" />
     <Content Remove="tests\**\*" />
     <None Remove="tests\**\*" />
+    <Compile Remove="SocialMediaWeb.AppHost\**\*.cs" />
+    <Content Remove="SocialMediaWeb.AppHost\**\*" />
+    <None Remove="SocialMediaWeb.AppHost\**\*" />
+    <Compile Remove="SocialMediaWeb.ServiceDefaults\**\*.cs" />
+    <Content Remove="SocialMediaWeb.ServiceDefaults\**\*" />
+    <None Remove="SocialMediaWeb.ServiceDefaults\**\*" />
+    <Compile Remove="SocialMediaWeb.ChatFunctions\**\*.cs" />
+    <Content Remove="SocialMediaWeb.ChatFunctions\**\*" />
+    <None Remove="SocialMediaWeb.ChatFunctions\**\*" />
   </ItemGroup>
 
 </Project>

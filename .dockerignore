@@ -1,5 +1,6 @@
 .git
 .gitignore
+.env
 
 **/bin/
 **/obj/
@@ -10,3 +11,5 @@ Frontend/.vite/
 
 Dockerfile
 README.md
+
+Backend/tests/

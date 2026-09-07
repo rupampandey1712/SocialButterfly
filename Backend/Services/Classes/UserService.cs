@@ -14,18 +14,20 @@ namespace SocialMediaWeb.Services.Classes
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _config;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IBlobStorageService _blobStorage;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
+        private const string ProfileImagesContainer = "profile-images";
 
         public UserService(
             ApplicationDbContext context,
             IConfiguration config,
-            IWebHostEnvironment webHostEnvironment,
+            IBlobStorageService blobStorage,
             IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _config = config;
-            _webHostEnvironment = webHostEnvironment;
+            _blobStorage = blobStorage;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -67,7 +69,7 @@ namespace SocialMediaWeb.Services.Classes
             }
 
             var imageUrl = model.ImageFile is { Length: > 0 }
-                ? await SaveImageAsync(model.ImageFile, "Images")
+                ? await _blobStorage.UploadAsync(model.ImageFile, ProfileImagesContainer)
                 : null;
 
             var user = new User
@@ -110,10 +112,10 @@ namespace SocialMediaWeb.Services.Classes
             {
                 if (!string.IsNullOrEmpty(user.ImagePath))
                 {
-                    DeleteImage(user.ImagePath);
+                    await _blobStorage.DeleteAsync(user.ImagePath, ProfileImagesContainer);
                 }
 
-                user.ImagePath = await SaveImageAsync(userUpdateDto.ImageFile, "Images");
+                user.ImagePath = await _blobStorage.UploadAsync(userUpdateDto.ImageFile, ProfileImagesContainer);
             }
 
             await _context.SaveChangesAsync();
@@ -181,39 +183,6 @@ namespace SocialMediaWeb.Services.Classes
             });
         }
 
-        private async Task<string> SaveImageAsync(IFormFile imageFile, string folderName)
-        {
-            var webRootPath = _webHostEnvironment.WebRootPath
-                ?? Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
-            var uploadPath = Path.Combine(webRootPath, folderName);
-            Directory.CreateDirectory(uploadPath);
-
-            var fileName = Path.GetFileNameWithoutExtension(imageFile.FileName);
-            var fileExtension = Path.GetExtension(imageFile.FileName);
-            var uniqueFileName = $"{fileName}_{DateTime.UtcNow.Ticks}{fileExtension}";
-            var filePath = Path.Combine(uploadPath, uniqueFileName);
-
-            await using var fileStream = new FileStream(filePath, FileMode.Create);
-            await imageFile.CopyToAsync(fileStream);
-
-            return $"{GetBaseUrl()}/{folderName}/{uniqueFileName}";
-        }
-
-        private void DeleteImage(string imagePath)
-        {
-            var fileName = Uri.TryCreate(imagePath, UriKind.Absolute, out var uri)
-                ? Path.GetFileName(uri.LocalPath)
-                : Path.GetFileName(imagePath);
-            var webRootPath = _webHostEnvironment.WebRootPath
-                ?? Path.Combine(_webHostEnvironment.ContentRootPath, "wwwroot");
-            var filePath = Path.Combine(webRootPath, "Images", fileName);
-
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-        }
-
         private string GenerateJwt(User user)
         {
             var claims = new List<Claim>
@@ -238,14 +207,6 @@ namespace SocialMediaWeb.Services.Classes
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private string GetBaseUrl()
-        {
-            var request = _httpContextAccessor.HttpContext?.Request
-                ?? throw new InvalidOperationException("The current HTTP request is not available.");
-
-            return $"{request.Scheme}://{request.Host}";
         }
     }
 }

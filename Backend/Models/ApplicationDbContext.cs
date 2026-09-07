@@ -14,6 +14,7 @@ namespace SocialMediaWeb.Models
         public DbSet<Like> Likes => Set<Like>();
 
         public DbSet<Friend> Friends => Set<Friend>();
+        public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -52,6 +53,28 @@ namespace SocialMediaWeb.Models
                      .WithMany(t => t.Receivers)
                      .HasForeignKey(m => m.ReceiverId)
                      .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.Property(message => message.Content)
+                    .HasMaxLength(2000)
+                    .IsRequired();
+
+                entity.HasIndex(message => message.MessageId)
+                    .IsUnique();
+
+                entity.HasIndex(message => new { message.SenderId, message.ReceiverId, message.SentAt });
+
+                entity.HasOne(message => message.Sender)
+                    .WithMany()
+                    .HasForeignKey(message => message.SenderId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(message => message.Receiver)
+                    .WithMany()
+                    .HasForeignKey(message => message.ReceiverId)
+                    .OnDelete(DeleteBehavior.NoAction);
+            });
         }
 
     }

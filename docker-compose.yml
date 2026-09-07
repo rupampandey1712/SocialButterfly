@@ -11,15 +11,47 @@ services:
     volumes:
       - sqlserver-data:/var/opt/mssql
 
-  backend:
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.35.0
+    restart: unless-stopped
+    command: azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /data
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    restart: unless-stopped
+    environment:
+      SQL_SERVER: sqlserver
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Change_this_password_123!}
+      ACCEPT_EULA: "Y"
+      EMULATOR_HTTP_PORT: 5300
+      SQL_WAIT_INTERVAL: 5
+    ports:
+      - "5672:5672"
+      - "5300:5300"
+    volumes:
+      - ./infra/servicebus/config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    depends_on:
+      - sqlserver
+
+  app:
+    image: ${SOCIALMEDIA_IMAGE:-ramp1712/socialmediaweb:latest}
     build:
-      context: ./Backend
+      context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Con: Server=sqlserver,1433;Database=SocialMedia;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Change_this_password_123!};TrustServerCertificate=True;Encrypt=False;
+      ConnectionStrings__blobs: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFeqCnf2lRcuQYhQv4o9VpxYlRvxK5Y6uR4oTHC9S0N2S/0EDYw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      ConnectionStrings__servicebus: Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      Database__ApplyMigrations: "true"
       JWT__ValidAudience: ${JWT_VALID_AUDIENCE:-http://localhost:3000}
       JWT__ValidIssuer: ${JWT_VALID_ISSUER:-http://localhost:5152}
       JWT__Secret: ${JWT_SECRET:-JWTRefreshTokenHIGHsecuredPasswordVVVp1OH7Xzyr}
@@ -27,23 +59,31 @@ services:
       JWT__RefreshTokenValidityInDays: ${JWT_REFRESH_TOKEN_VALIDITY_IN_DAYS:-7}
       GenAI__GrpcAddress: ${GENAI_GRPC_ADDRESS:-http://genai:50051}
     ports:
-      - "5152:8080"
+      - "8080:8080"
     depends_on:
       - sqlserver
+      - azurite
+      - servicebus
     volumes:
-      - backend-wwwroot:/app/wwwroot
+      - app-images:/app/wwwroot/Images
+      - app-posts:/app/wwwroot/posts
 
-  frontend:
+  chat-functions:
     build:
-      context: ./Frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_ORIGIN: ""
+      context: .
+      dockerfile: Backend/SocialMediaWeb.ChatFunctions/Dockerfile
     restart: unless-stopped
-    ports:
-      - "3000:80"
+    environment:
+      FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
+      AzureWebJobsStorage: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFeqCnf2lRcuQYhQv4o9VpxYlRvxK5Y6uR4oTHC9S0N2S/0EDYw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      ConnectionStrings__Con: Server=sqlserver,1433;Database=SocialMedia;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Change_this_password_123!};TrustServerCertificate=True;Encrypt=False;
+      ServiceBusConnection: Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
+      ChatQueueName: chat-messages
+      DurableTaskHubName: chatdelivery
     depends_on:
-      - backend
+      - sqlserver
+      - azurite
+      - servicebus
 
   genai:
     profiles:
@@ -62,4 +102,6 @@ services:
 
 volumes:
   sqlserver-data:
-  backend-wwwroot:
+  app-images:
+  app-posts:
+  azurite-data:

@@ -4,6 +4,7 @@ import Register from "./pages/register/Register";
 import MyFriends from "./pages/friends/Requests";
 import Home from "./pages/home/Home";
 import Login from "./pages/login/Login";
+import Chat from "./pages/chat/Chat";
 import {Sidenav} from "./Admin/component/SideNav";
 import Dashboard  from "./Admin/page/Dashboard";
 import Settings from "./Admin/page/Settings";
@@ -31,6 +32,7 @@ function App(){
 <Route path='/register' element={<Register></Register>} />
 <Route path='/requests' element={<MyFriends></MyFriends>} />
 <Route path='/home' element={<Home></Home>} />
+<Route path='/chat' element={<Chat></Chat>} />
 </Routes>
 ):(
 <div className="admin-layout">
