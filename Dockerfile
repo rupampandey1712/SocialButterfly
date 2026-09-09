@@ -16,6 +16,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS backend-build
 WORKDIR /src
 
 COPY Backend/SocialMediaWeb.csproj Backend/
+COPY Backend/SocialMediaWeb.ServiceDefaults/SocialMediaWeb.ServiceDefaults.csproj Backend/SocialMediaWeb.ServiceDefaults/
 RUN dotnet restore Backend/SocialMediaWeb.csproj
 
 COPY Backend/ Backend/

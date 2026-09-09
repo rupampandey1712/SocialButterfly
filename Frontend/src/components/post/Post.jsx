@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import CommentModal from "../../pages/comments/Comments";
 import { useEffect } from "react";
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 // import Loader from "../loader/Loader";
 
 export default function Post() {
@@ -16,11 +17,13 @@ export default function Post() {
   const [data,setData] = useState([])
 
   useEffect(()=>{
-    // setIsLoading(true);
+    if (!id) {
+      setData([]);
+      return;
+    }
     axios.get(`https://localhost:7151/api/Post/${id}`).then((response)=>{
       console.log(response);
       setData((existData)=>{
-        // setIsLoading(false)
             return response.data;
             });
         }).catch((error) => {
@@ -69,13 +72,14 @@ export default function Post() {
           <div className="postTopLeft">
             <img
               className="postProfileImg"
-              src={data.user.imagePath}
+              src={getPublicImageUrl(data.user?.imagePath)}
               alt=""
+              onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
             />
             <span className="postUsername">
-              {data.user.name}
+              {data.user?.name || "User"}
             </span>
-            <span className="postDate">{new Date(data.createdAt).toLocaleDateString()}</span>
+            <span className="postDate">{data.createdAt ? new Date(data.createdAt).toLocaleDateString() : ""}</span>
           </div>
           <div className="postTopRight">
             <MoreVert />
@@ -83,16 +87,16 @@ export default function Post() {
         </div>
         <div className="postCenter">
           <span className="postText">{data.descriprion}</span>
-          {data.imagePath.endsWith('.jpg') || data.imagePath.endsWith('.png') ? (
-            <img className="postImg" src={data.imagePath} alt="" />
-          ) : data.imagePath.endsWith('.mp4') || data.imagePath.endsWith('.mov') ? (
+          {data.imagePath && (data.imagePath.endsWith('.jpg') || data.imagePath.endsWith('.png') || data.imagePath.endsWith('.jpeg')) ? (
+            <img className="postImg" src={getPublicImageUrl(data.imagePath)} alt="" />
+          ) : data.imagePath && (data.imagePath.endsWith('.mp4') || data.imagePath.endsWith('.mov')) ? (
             <video className="postImg" controls>
-              <source src={data.imagePath} type="video/mp4" />
+              <source src={getPublicImageUrl(data.imagePath)} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-          ) : data.imagePath.endsWith('.mp3') || data.imagePath.endsWith('.wav') ? (
+          ) : data.imagePath && (data.imagePath.endsWith('.mp3') || data.imagePath.endsWith('.wav')) ? (
             <audio className="postImg" controls>
-              <source src={data.imagePath} type="audio/mpeg" />
+              <source src={getPublicImageUrl(data.imagePath)} type="audio/mpeg" />
               Your browser does not support the audio tag.
             </audio>
           ) : null}

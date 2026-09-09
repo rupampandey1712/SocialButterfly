@@ -3,10 +3,10 @@ import Topbar from "../../components/topbar/Topbar";
 import Sidebar from "../../components/sidebar/Sidebar";
 import Feed from "../../components/feed/Feed";
 import Rightbar from "../../components/rightbar/Rightbar";
-
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 
 export default function Profile() {
-  const image=sessionStorage.getItem("url");
+  const image = getPublicImageUrl(sessionStorage.getItem("url") || sessionStorage.getItem("imagePath"));
   const name=sessionStorage.getItem("name");
 
   return (
@@ -28,6 +28,7 @@ export default function Profile() {
                 className="profileUserImg"
                 src={image}
                 alt=""
+                onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
               />
             </div>
             <div className="profileInfo">

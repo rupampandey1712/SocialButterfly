@@ -3,6 +3,7 @@ import { Users } from "../../dummyData";
 import Online from "../online/Online";
 import { useState,useEffect } from "react";
 import axios from "axios";
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 
 export default function Rightbar({ profile }) {
   const HomeRightbar = () => {
@@ -31,11 +32,16 @@ export default function Rightbar({ profile }) {
     const id = sessionStorage.getItem('Id')
 
     useEffect(()=>{
-      axios.get(`https://localhost:7151/api/Friends/${id}/myfriends`).then(response => {
-        setFriends(response.data.value);
+      if (!id) {
+        setFriends([]);
+        return;
+      }
+      axios.get(getApiUrl(`/api/Friends/${id}/myfriends`)).then(response => {
+        setFriends(response.data.value || []);
         })
         .catch(error => {
           console.log(error);
+          setFriends([]);
         });
     }, [id]);
 
@@ -63,9 +69,10 @@ export default function Rightbar({ profile }) {
   friends.map((f)=>(
 <div className="rightbarFollowing" key={f.id}>
             <img
-              src={f.imagePath}
+              src={getPublicImageUrl(f.imagePath)}
               alt=""
               className="rightbarFollowingImg"
+              onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
             />
             <span className="rightbarFollowingName">{f.name}</span>
           </div>

@@ -16,5 +16,10 @@ namespace SocialMediaWeb.Services.Interfaces
         /// Gets the full URL for a blob in the specified container.
         /// </summary>
         string GetBlobUrl(string containerName, string blobName);
+
+        /// <summary>
+        /// Converts an internal blob URL (e.g. Docker azurite endpoint) to a publicly accessible URL for clients.
+        /// </summary>
+        string? ToPublicUrl(string? blobUrl);
     }
 }

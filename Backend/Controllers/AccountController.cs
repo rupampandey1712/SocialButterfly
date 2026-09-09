@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaWeb.Dtos;
 using SocialMediaWeb.Models;
 using SocialMediaWeb.Services.Interfaces;
-using System.Diagnostics.Metrics;
 
 namespace SocialMediaWeb.Controllers
 {
@@ -14,9 +12,12 @@ namespace SocialMediaWeb.Controllers
     public class AccountController : ControllerBase
     {
         private readonly IUserService _userService;
-        public AccountController(IUserService userService)
+        private readonly IBlobStorageService _blobStorage;
+
+        public AccountController(IUserService userService, IBlobStorageService blobStorage)
         {
             _userService = userService;
+            _blobStorage = blobStorage;
         }
 
         [HttpPost("register")]
@@ -31,11 +32,10 @@ namespace SocialMediaWeb.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm]UserLoginDto authenticationDto)
+        public async Task<IActionResult> Login([FromForm] UserLoginDto authenticationDto)
         {
             try
             {
@@ -98,13 +98,17 @@ namespace SocialMediaWeb.Controllers
         {
             try
             {
-                var user = await _userService.Search(dto).ToListAsync();
-                return Ok(user);
+                var users = await _userService.Search(dto).ToListAsync();
+                foreach (var u in users)
+                {
+                    u.ImagePath = _blobStorage.ToPublicUrl(u.ImagePath);
+                }
+                return Ok(users);
             }
-             catch (Exception ex)
-             {
-                 return StatusCode(StatusCodes.Status400BadRequest, $"Error updating user: {ex.Message}");
-             }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, $"Error searching user: {ex.Message}");
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import {PermMedia, Label,Room, EmojiEmotions} from "@mui/icons-material"
 import axios from "axios";
 import Loader from "../loader/Loader";
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 
 export default function Share() {
 
@@ -10,7 +11,7 @@ export default function Share() {
   const userId = sessionStorage.getItem('Id')
   const [imageFile, setImageFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false)
-  const image = sessionStorage.getItem('url')
+  const image = getPublicImageUrl(sessionStorage.getItem('url') || sessionStorage.getItem('imagePath'));
 
     function Share(){
 
@@ -45,7 +46,12 @@ export default function Share() {
 
 
         <div className="shareTop">
-          <img className="shareProfileImg" src={image} alt=""   />
+          <img
+            className="shareProfileImg"
+            src={image}
+            alt=""
+            onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+          />
           <input
             placeholder="Whats in your mind? "
             className="shareInput"

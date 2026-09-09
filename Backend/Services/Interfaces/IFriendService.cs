@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SocialMediaWeb.Dtos;
 using SocialMediaWeb.Models;
 
@@ -8,7 +8,11 @@ namespace SocialMediaWeb.Services.Interfaces
     {
         Task<ActionResult<FriendDto>> SendFriendRequest(FriendDto friendDto);
 
-        Task<ActionResult<FriendDto>> AcceptFriendRequest(int friendId);
+        Task<ActionResult<FriendDto>> AcceptFriendRequest(int senderId, int? receiverId = null);
+
+        Task<bool> DeleteOrDeclineFriendRequest(int senderId, int receiverId);
+
+        Task<string> GetFriendshipStatus(int currentUserId, int otherUserId);
 
         Task<ActionResult<IEnumerable<User>>> GetFriends(int userId);
 

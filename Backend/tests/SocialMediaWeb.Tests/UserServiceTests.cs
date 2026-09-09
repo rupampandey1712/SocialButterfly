@@ -108,5 +108,10 @@ public class UserServiceTests
         {
             return $"http://localhost:10000/devstoreaccount1/{containerName}/{blobName}";
         }
+
+        public string? ToPublicUrl(string? blobUrl)
+        {
+            return blobUrl;
+        }
     }
 }

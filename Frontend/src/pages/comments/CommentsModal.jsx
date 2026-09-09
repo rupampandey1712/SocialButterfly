@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 import { ModalBody, Form, FormControl, InputGroup, Button, Image } from "react-bootstrap";
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 import "./CommentsModal.css";
 
 const CommentsModal = ({ show, postId, onClose }) => {
@@ -10,6 +11,7 @@ const CommentsModal = ({ show, postId, onClose }) => {
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
+    if (!postId) return;
     axios
       .get(`https://localhost:7151/api/Comment/${postId}`)
       .then((response) => {
@@ -22,6 +24,8 @@ const CommentsModal = ({ show, postId, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!newComment.trim()) return;
+
     axios
       .post(`https://localhost:7151/api/Comment`, {
         text: newComment,
@@ -54,10 +58,11 @@ const CommentsModal = ({ show, postId, onClose }) => {
                   width={40}
                   height={40}
                   className="mr-3 rounded-full"
-                  src={comment.user.imagePath}
+                  src={getPublicImageUrl(comment.user?.imagePath)}
+                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
                 />
                 <div>
-                  <h5 className="text-sm font-semibold">{comment.user.name}</h5>
+                  <h5 className="text-sm font-semibold">{comment.user?.name}</h5>
                   <p className="text-gray-800 text-sm">{comment.text}</p>
                   <small className="text-gray-500 text-xs">
                     {new Date(comment.createdAt).toLocaleDateString()}
@@ -75,7 +80,8 @@ const CommentsModal = ({ show, postId, onClose }) => {
               width={32}
               height={32}
               className="mr-3 rounded-full"
-              src={sessionStorage.getItem("imagePath")}
+              src={getPublicImageUrl(sessionStorage.getItem("imagePath") || sessionStorage.getItem("url"))}
+              onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
             />
             <FormControl
               placeholder="Add a comment..."

@@ -128,12 +128,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("ReactJsDomain");
+
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
-
-app.UseCors("ReactJsDomain");
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -155,7 +155,14 @@ app.MapFallback(async context =>
         return;
     }
 
-    await context.Response.SendFileAsync(Path.Combine(app.Environment.WebRootPath, "index.html"));
+    var indexPath = Path.Combine(app.Environment.WebRootPath, "index.html");
+    if (!File.Exists(indexPath))
+    {
+        context.Response.StatusCode = StatusCodes.Status404NotFound;
+        return;
+    }
+
+    await context.Response.SendFileAsync(indexPath);
 });
 
 app.Run();

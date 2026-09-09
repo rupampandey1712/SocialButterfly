@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaWeb.Dtos;
 using SocialMediaWeb.Models;
@@ -9,10 +9,12 @@ namespace SocialMediaWeb.Services.Classes
     public class FriendService:IFriendService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBlobStorageService? _blobStorage;
 
-        public FriendService(ApplicationDbContext context)
+        public FriendService(ApplicationDbContext context, IBlobStorageService? blobStorage = null)
         {
             _context = context;
+            _blobStorage = blobStorage;
         }
 
         public async Task<ActionResult<FriendDto>> SendFriendRequest(FriendDto friendDto)
@@ -23,10 +25,10 @@ namespace SocialMediaWeb.Services.Classes
             }
 
             var usersExist = await _context.Users
-                .CountAsync(u => u.Id == friendDto.SenderId || u.Id == friendDto.ReceiverId);
+                .CountAsync(u => (u.Id == friendDto.SenderId || u.Id == friendDto.ReceiverId) && !u.IsDeleted);
             if (usersExist != 2)
             {
-                throw new ArgumentException("Both users must exist.");
+                throw new ArgumentException("Both users must exist and be active.");
             }
 
             var requestExists = await _context.Friends.AnyAsync(f =>
@@ -34,7 +36,7 @@ namespace SocialMediaWeb.Services.Classes
                 (f.SenderId == friendDto.ReceiverId && f.ReceiverId == friendDto.SenderId));
             if (requestExists)
             {
-                throw new InvalidOperationException("A friend request already exists between these users.");
+                throw new InvalidOperationException("A friend relationship or request already exists between these users.");
             }
 
             var friend = new Friend
@@ -60,16 +62,23 @@ namespace SocialMediaWeb.Services.Classes
             return friendDtoResponse;
         }
 
-        public async Task<ActionResult<FriendDto>> AcceptFriendRequest(int SenderId)
+        public async Task<ActionResult<FriendDto>> AcceptFriendRequest(int senderId, int? receiverId = null)
         {
-            var friend = await _context.Friends.FirstOrDefaultAsync(u=>u.SenderId==SenderId);
+            var query = _context.Friends.Where(u => u.SenderId == senderId && !u.IsAccepted);
+            if (receiverId.HasValue && receiverId.Value > 0)
+            {
+                query = query.Where(u => u.ReceiverId == receiverId.Value);
+            }
+
+            var friend = await query.FirstOrDefaultAsync();
 
             if (friend == null)
             {
-                throw new Exception("Value Not found");
+                throw new Exception("Friend request not found.");
             }
 
             friend.IsAccepted = true;
+            friend.AcceptedAt = DateTime.UtcNow;
 
             _context.Entry(friend).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -86,12 +95,59 @@ namespace SocialMediaWeb.Services.Classes
             return response;
         }
 
+        public async Task<bool> DeleteOrDeclineFriendRequest(int senderId, int receiverId)
+        {
+            var friend = await _context.Friends.FirstOrDefaultAsync(f =>
+                (f.SenderId == senderId && f.ReceiverId == receiverId) ||
+                (f.SenderId == receiverId && f.ReceiverId == senderId));
+
+            if (friend == null)
+            {
+                return false;
+            }
+
+            _context.Friends.Remove(friend);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<string> GetFriendshipStatus(int currentUserId, int otherUserId)
+        {
+            if (currentUserId <= 0 || otherUserId <= 0 || currentUserId == otherUserId)
+            {
+                return "None";
+            }
+
+            var friendship = await _context.Friends
+                .AsNoTracking()
+                .FirstOrDefaultAsync(f =>
+                    (f.SenderId == currentUserId && f.ReceiverId == otherUserId) ||
+                    (f.SenderId == otherUserId && f.ReceiverId == currentUserId));
+
+            if (friendship == null)
+            {
+                return "None";
+            }
+
+            if (friendship.IsAccepted)
+            {
+                return "Friends";
+            }
+
+            if (friendship.SenderId == currentUserId)
+            {
+                return "RequestSent";
+            }
+
+            return "RequestReceived";
+        }
+
         public async Task<ActionResult<IEnumerable<User>>> GetFriends(int userId)
         {
             var user = await _context.Users
                 .Include(u => u.Senders).ThenInclude(f => f.Receiver)
                 .Include(u => u.Receivers).ThenInclude(f => f.Sender)
-                .FirstOrDefaultAsync(u => u.Id == userId);
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted);
 
             if (user == null)
             {
@@ -99,13 +155,13 @@ namespace SocialMediaWeb.Services.Classes
             }
 
             var friends = user.Senders
-        .Where(f => f.IsAccepted && f.Receiver != null)
-        .Select(f => f.Receiver!)
-        .Union(user.Receivers
-            .Where(f => f.IsAccepted && f.Sender != null)
-            .Select(f => f.Sender!))
-        .Distinct()
-        .ToList();
+                .Where(f => f.IsAccepted && f.Receiver != null && !f.Receiver.IsDeleted)
+                .Select(f => f.Receiver!)
+                .Union(user.Receivers
+                    .Where(f => f.IsAccepted && f.Sender != null && !f.Sender.IsDeleted)
+                    .Select(f => f.Sender!))
+                .Distinct()
+                .ToList();
 
             return friends;
         }
@@ -113,24 +169,24 @@ namespace SocialMediaWeb.Services.Classes
         public async Task<ActionResult<int>> GetRequest(int receiverId)
         {
             var count = await _context.Friends
-                    .CountAsync(f => f.ReceiverId == receiverId && !f.IsAccepted);
+                .CountAsync(f => f.ReceiverId == receiverId && !f.IsAccepted);
 
             return count;
         }
 
-        public async Task<ActionResult<int>> FriendsCount(int receiverId)
+        public async Task<ActionResult<int>> FriendsCount(int userId)
         {
             var count = await _context.Friends
-                    .CountAsync(f => f.ReceiverId == receiverId && f.IsAccepted== true);
+                .CountAsync(f => f.IsAccepted && (f.ReceiverId == userId || f.SenderId == userId));
 
             return count;
         }
 
         public async Task<ActionResult<List<RequestDto>>> GetUserRequest(int receiverId)
         {
-            var friends = await (from u in _context.Users
+            var requests = await (from u in _context.Users
                                  join f in _context.Friends on u.Id equals f.SenderId
-                                 where f.ReceiverId == receiverId && f.IsAccepted == false
+                                 where f.ReceiverId == receiverId && f.IsAccepted == false && !u.IsDeleted
                                  select new RequestDto
                                  {
                                      ImagePath = u.ImagePath,
@@ -139,25 +195,55 @@ namespace SocialMediaWeb.Services.Classes
                                      Id = u.Id
                                  }).ToListAsync();
 
-            return friends;
+            if (_blobStorage != null)
+            {
+                foreach (var req in requests)
+                {
+                    req.ImagePath = _blobStorage.ToPublicUrl(req.ImagePath);
+                }
+            }
+
+            return requests;
         }
 
-        public async Task<ActionResult<List<RequestDto>>> GetMyFriends(int receiverId)
+        public async Task<ActionResult<List<RequestDto>>> GetMyFriends(int userId)
         {
-            var friends = await (from u in _context.Users
-                                 join f in _context.Friends on u.Id equals f.SenderId
-                                 where f.ReceiverId == receiverId && f.IsAccepted == true
-                                 select new RequestDto
-                                 {
-                                     ImagePath = u.ImagePath,
-                                     Name = u.Name,
-                                     Dob = u.Dob, 
-                                     Id = u.Id
-                                 }).ToListAsync();
+            var sentFriends = await (from f in _context.Friends
+                                     join u in _context.Users on f.ReceiverId equals u.Id
+                                     where f.SenderId == userId && f.IsAccepted && !u.IsDeleted
+                                     select new RequestDto
+                                     {
+                                         ImagePath = u.ImagePath,
+                                         Name = u.Name,
+                                         Dob = u.Dob,
+                                         Id = u.Id
+                                     }).ToListAsync();
 
-            return friends;
+            var receivedFriends = await (from f in _context.Friends
+                                         join u in _context.Users on f.SenderId equals u.Id
+                                         where f.ReceiverId == userId && f.IsAccepted && !u.IsDeleted
+                                         select new RequestDto
+                                         {
+                                             ImagePath = u.ImagePath,
+                                             Name = u.Name,
+                                             Dob = u.Dob,
+                                             Id = u.Id
+                                         }).ToListAsync();
+
+            var allFriends = sentFriends.Concat(receivedFriends)
+                .GroupBy(f => f.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            if (_blobStorage != null)
+            {
+                foreach (var friend in allFriends)
+                {
+                    friend.ImagePath = _blobStorage.ToPublicUrl(friend.ImagePath);
+                }
+            }
+
+            return allFriends;
         }
     }
 }
-
-

@@ -7,6 +7,7 @@ import {useNavigate } from "react-router-dom";
 import { isExpired, decodeToken } from "react-jwt";
 import Loader from "../../components/loader/Loader";
 import AppLogo from "../../components/logo/AppLogo";
+import { getPublicImageUrl } from "../../utils/image";
 import "./login.css";
 
 const Login = () => {
@@ -28,49 +29,50 @@ const Login = () => {
 
 
   
-function loginUser(){
+  async function loginUser() {
+    if (!email || !password) {
+      alert("Please enter both email and password.");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("email", email);
-  formData.append("password", password); 
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
-
-
-  setTimeout(() =>{
     setIsLoading(true);
-    axios.post("https://localhost:7151/api/Account/login",formData)
-    .then((response)=>{
+    try {
+      const response = await axios.post("https://localhost:7151/api/Account/login", formData);
       console.log(response);
-      setIsLoading(false)
-        sessionStorage.setItem("isLoggedIn", 'true');
-        sessionStorage.setItem("tokens",response.data.token);
-        sessionStorage.setItem("Id",response.data.id);
-        sessionStorage.setItem("url",response.data.imagePath);
-        const token = sessionStorage.getItem("tokens");    
-        const decoded = decodeToken(token);
-          const isMyTokenExpired = isExpired(token);
-        console.log(decoded);
-        console.log(isMyTokenExpired);
+      sessionStorage.setItem("isLoggedIn", 'true');
+      sessionStorage.setItem("tokens", response.data.token);
+      sessionStorage.setItem("Id", response.data.id);
+      const publicAvatar = getPublicImageUrl(response.data.imagePath);
+      sessionStorage.setItem("url", publicAvatar);
+      sessionStorage.setItem("imagePath", publicAvatar);
 
-        const claimValue = decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        if(claimValue==='Admin'){
-           navigate('/')
-         }
-         const claimName= decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
- 
-         
-         console.log(claimName);
-         console.log(claimValue);
- 
-         sessionStorage.setItem('name',claimName);
-         sessionStorage.setItem('role', claimValue);
-         handleClose();
-         window.location.reload();
+      const token = response.data.token;
+      const decoded = decodeToken(token);
+      const isMyTokenExpired = isExpired(token);
+      console.log(decoded, isMyTokenExpired);
 
-  },5000)
-   
-    });
+      const claimValue = decoded ? decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] : "User";
+      const claimName = decoded ? decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] : email;
 
+      sessionStorage.setItem('name', claimName);
+      sessionStorage.setItem('role', claimValue);
+      handleClose();
+
+      if (claimValue === 'Admin') {
+        navigate('/');
+      }
+      window.location.reload();
+    } catch (error) {
+      console.error("Login failed:", error);
+      const errorMsg = error.response?.data || error.message || "Login failed. Please check your credentials.";
+      alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    } finally {
+      setIsLoading(false);
+    }
   }
 return(
 

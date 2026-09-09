@@ -51,7 +51,7 @@ namespace SocialMediaWeb.Services.Classes
                 Id = user.Id,
                 Email = user.Email,
                 Role = user.Role,
-                ImagePath = user.ImagePath,
+                ImagePath = _blobStorage.ToPublicUrl(user.ImagePath),
                 Token = GenerateJwt(user)
             };
         }
@@ -131,12 +131,13 @@ namespace SocialMediaWeb.Services.Classes
                 throw new NullReferenceException("User cannot be found");
             }
 
+            user.ImagePath = _blobStorage.ToPublicUrl(user.ImagePath);
             return user;
         }
 
         public async Task<List<ResponseDto>> GetUserAsync()
         {
-            return await _context.Users
+            var users = await _context.Users
                 .Select(u => new ResponseDto
                 {
                     Id = u.Id,
@@ -147,34 +148,62 @@ namespace SocialMediaWeb.Services.Classes
                     ImagePath = u.ImagePath
                 })
                 .ToListAsync();
+
+            foreach (var u in users)
+            {
+                u.ImagePath = _blobStorage.ToPublicUrl(u.ImagePath);
+            }
+
+            return users;
         }
 
         public IQueryable<UserDto> Search(UserDto dto)
         {
-            var query = _context.Users.Where(u => u.Role != "Admin").AsQueryable();
+            var query = _context.Users
+                .Where(u => !u.IsDeleted && u.Role != "Admin")
+                .AsQueryable();
 
-            if (!string.IsNullOrEmpty(dto.Name))
+            // Detect if this is a general search where the same term was passed to multiple fields
+            var distinctTerms = new[] { dto.Name, dto.Email, dto.Role, dto.Information }
+                .Where(term => !string.IsNullOrWhiteSpace(term))
+                .Select(term => term!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            if (distinctTerms.Count == 1)
             {
-                query = query.Where(u => EF.Functions.Like(u.Name!, $"%{dto.Name}%"));
+                var singleTerm = distinctTerms[0];
+                query = query.Where(u =>
+                    (u.Name != null && EF.Functions.Like(u.Name, $"%{singleTerm}%")) ||
+                    (u.Email != null && EF.Functions.Like(u.Email, $"%{singleTerm}%")) ||
+                    (u.Information != null && EF.Functions.Like(u.Information, $"%{singleTerm}%")));
             }
-
-            if (!string.IsNullOrEmpty(dto.Email))
+            else
             {
-                query = query.Where(u => EF.Functions.Like(u.Email!, $"%{dto.Email}%"));
-            }
+                if (!string.IsNullOrEmpty(dto.Name))
+                {
+                    query = query.Where(u => u.Name != null && EF.Functions.Like(u.Name, $"%{dto.Name}%"));
+                }
 
-            if (!string.IsNullOrEmpty(dto.Role))
-            {
-                query = query.Where(u => EF.Functions.Like(u.Role!, $"%{dto.Role}%"));
-            }
+                if (!string.IsNullOrEmpty(dto.Email))
+                {
+                    query = query.Where(u => u.Email != null && EF.Functions.Like(u.Email, $"%{dto.Email}%"));
+                }
 
-            if (!string.IsNullOrEmpty(dto.Information))
-            {
-                query = query.Where(u => EF.Functions.Like(u.Information!, $"%{dto.Information}%"));
+                if (!string.IsNullOrEmpty(dto.Role))
+                {
+                    query = query.Where(u => u.Role != null && EF.Functions.Like(u.Role, $"%{dto.Role}%"));
+                }
+
+                if (!string.IsNullOrEmpty(dto.Information))
+                {
+                    query = query.Where(u => u.Information != null && EF.Functions.Like(u.Information, $"%{dto.Information}%"));
+                }
             }
 
             return query.Select(u => new UserDto
             {
+                Id = u.Id,
                 Name = u.Name,
                 Email = u.Email,
                 Role = u.Role,

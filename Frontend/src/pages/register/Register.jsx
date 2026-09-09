@@ -13,35 +13,61 @@ function Register(){
   const role="User";
   const [dob, setDob] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [information, SetInformation] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const navigate = useNavigate();
 
-  
-    const navigate = useNavigate();
-    
-    function registerUser(){
+  const handleImageChange = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setImagePreview(null);
+    }
+  };
 
-      const formattedDate = new Date(dob).toLocaleDateString('en-US');
-            
-          const formData = new FormData();
+  async function registerUser(e) {
+    if (e && e.preventDefault) e.preventDefault();
+
+    if (!name || !email || !password) {
+      alert("Please fill in Name, Email, and Password.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const formattedDate = dob ? new Date(dob).toISOString() : new Date().toISOString();
+
+    const formData = new FormData();
     formData.append("Name", name);
     formData.append("Email", email);
     formData.append("Password", password);
     formData.append("Dob", formattedDate);
     formData.append("Role", role);
-    formData.append("ImageFile", imageFile);
-    formData.append("Information", information);
+    if (imageFile) {
+      formData.append("ImageFile", imageFile);
+    }
+    formData.append("Information", information || "");
 
-  
-    
-       axios.post("https://localhost:7151/api/Account/register", formData, {
+    try {
+      await axios.post("https://localhost:7151/api/Account/register", formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      alert('Registration successful!');
-      navigate('/')
-    } 
+      alert('Registration successful! Please sign in.');
+      navigate('/');
+    } catch (error) {
+      console.error("Registration failed:", error);
+      const errorMsg = error.response?.data || error.message || "Registration failed. Please try again.";
+      alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
+    } finally {
+      setIsSubmitting(false);
+    }
+  } 
   
   
     return (
@@ -103,20 +129,45 @@ function Register(){
                   </div>
 
                   <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-file fa-lg me-3 fa-fw"></i>
+                    <i className="fas fa-image fa-lg me-3 fa-fw"></i>
                     <div className="form-outline flex-fill mb-0">
-                      <input type="file" id="form3Example4cd" className="form-control"  onChange={(e) => {
-                  setImageFile(e.target.files[0])
-              }}/>
+                      <label htmlFor="form3Example4cd" className="form-label text-muted small mb-1">Profile Picture</label>
+                      <input
+                        type="file"
+                        id="form3Example4cd"
+                        className="form-control"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
                     </div>
                   </div>
 
+                  {imagePreview && (
+                    <div className="d-flex justify-content-center mb-4">
+                      <div className="text-center">
+                        <img
+                          src={imagePreview}
+                          alt="Profile Preview"
+                          style={{
+                            width: "90px",
+                            height: "90px",
+                            objectFit: "cover",
+                            borderRadius: "50%",
+                            border: "3px solid #1877f2",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+                          }}
+                        />
+                        <div className="small text-muted mt-1">Profile Preview</div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-file fa-lg me-3 fa-fw"></i>
+                    <i className="fas fa-info-circle fa-lg me-3 fa-fw"></i>
                     <div className="form-outline flex-fill mb-0">
                       <input type="text" id="form3Example5cd" className="form-control" value={information}  onChange={(e) => {
                   SetInformation(e.target.value)
-              }} placeholder="Information"/>
+              }} placeholder="Bio / Information"/>
                     </div>
                   </div>
 
@@ -128,7 +179,14 @@ function Register(){
                   </div>
 
                   <div className="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
-                    <button type="button" className="btn btn-primary btn-lg" onClick={registerUser}>Register</button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-lg"
+                      onClick={registerUser}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? "Creating account..." : "Register"}
+                    </button>
                   </div>
                 
                   <p>

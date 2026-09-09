@@ -1,11 +1,34 @@
-import { defineConfig, transformWithEsbuild } from "vite";
+import { defineConfig, transformWithEsbuild, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
 const sourceFilePattern = /[\\/]src[\\/].*\.[jt]sx?$/;
 const jsSourceFilePattern = /[\\/]src[\\/].*\.js$/;
-const apiOrigin = (process.env.VITE_API_ORIGIN ?? "https://localhost:7151").replace(/\/$/, "");
+const apiOrigin = (
+  process.env.VITE_API_ORIGIN ||
+  loadEnv("development", process.cwd(), "").VITE_API_ORIGIN ||
+  ""
+).replace(/\/$/, "");
 
 export default defineConfig({
+  server: {
+    proxy: {
+      "/api": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/Images": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/posts": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
   plugins: [
     {
       name: "configure-api-origin",

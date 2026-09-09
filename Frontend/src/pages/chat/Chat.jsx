@@ -1,10 +1,12 @@
 import axios from "axios";
 import { ForumOutlined, SendRounded } from "@mui/icons-material";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Topbar from "../../components/topbar/Topbar";
+import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
+import { getApiUrl } from "../../utils/api";
 import "./chat.css";
 
-const apiOrigin = (import.meta.env.VITE_API_ORIGIN ?? "https://localhost:7151").replace(/\/$/, "");
 const pollIntervalMs = 3000;
 
 const createMessageId = () => (
@@ -18,6 +20,8 @@ const formatTime = (value) => new Intl.DateTimeFormat(undefined, {
 }).format(new Date(value));
 
 export default function Chat() {
+  const [searchParams] = useSearchParams();
+  const queryUserId = searchParams.get("userId");
   const currentUserId = Number(sessionStorage.getItem("Id"));
   const token = sessionStorage.getItem("tokens");
   const [contacts, setContacts] = useState([]);
@@ -38,12 +42,29 @@ export default function Chat() {
       return;
     }
 
-    axios.get(`${apiOrigin}/api/Account/Get`, authConfig)
+    axios.get(getApiUrl("/api/Account/Get"), authConfig)
       .then((response) => {
-        setContacts((response.data ?? []).filter((user) => user.id !== currentUserId));
+        const list = (response.data ?? []).filter((user) => user.id !== currentUserId);
+        setContacts(list);
+
+        if (queryUserId) {
+          const matched = list.find((u) => u.id === Number(queryUserId));
+          if (matched) {
+            setSelectedContact(matched);
+          }
+        }
       })
       .catch(() => setError("Unable to load people to chat with."));
-  }, [authConfig, currentUserId]);
+  }, [authConfig, currentUserId, queryUserId]);
+
+  useEffect(() => {
+    if (queryUserId && contacts.length > 0) {
+      const matched = contacts.find((u) => u.id === Number(queryUserId));
+      if (matched && selectedContact?.id !== matched.id) {
+        setSelectedContact(matched);
+      }
+    }
+  }, [queryUserId, contacts, selectedContact]);
 
   const loadConversation = useCallback(async () => {
     if (!selectedContact) {
@@ -53,7 +74,7 @@ export default function Chat() {
     try {
       setIsLoading(true);
       const response = await axios.get(
-        `${apiOrigin}/api/Chat/with/${selectedContact.id}?limit=100`,
+        getApiUrl(`/api/Chat/with/${selectedContact.id}?limit=100`),
         authConfig,
       );
       const deliveredMessages = response.data ?? [];
@@ -68,7 +89,7 @@ export default function Chat() {
         (message) => message.receiverId === currentUserId && !message.isRead,
       )) {
         await axios.put(
-          `${apiOrigin}/api/Chat/with/${selectedContact.id}/read`,
+          getApiUrl(`/api/Chat/with/${selectedContact.id}/read`),
           {},
           authConfig,
         );
@@ -131,7 +152,7 @@ export default function Chat() {
     setIsSending(true);
 
     try {
-      await axios.post(`${apiOrigin}/api/Chat`, {
+      await axios.post(getApiUrl("/api/Chat"), {
         receiverId: selectedContact.id,
         content,
         clientMessageId: messageId,
@@ -140,7 +161,7 @@ export default function Chat() {
     } catch {
       setPendingMessages((pending) => pending.filter((message) => message.messageId !== messageId));
       setDraft(content);
-      setError("Your message could not be queued. Please try again.");
+      setError("Your message could not be sent. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -166,7 +187,11 @@ export default function Chat() {
                 className={`chatContact ${selectedContact?.id === contact.id ? "isSelected" : ""}`}
                 onClick={() => selectContact(contact)}
               >
-                <img src={contact.imagePath || "/assets/person/1.jpeg"} alt="" />
+                <img
+                  src={getPublicImageUrl(contact.imagePath)}
+                  alt=""
+                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+                />
                 <span>{contact.name || contact.email || "SocialButterfly member"}</span>
               </button>
             ))}
@@ -184,7 +209,11 @@ export default function Chat() {
           ) : (
             <>
               <header className="chatThreadHeader">
-                <img src={selectedContact.imagePath || "/assets/person/1.jpeg"} alt="" />
+                <img
+                  src={getPublicImageUrl(selectedContact.imagePath)}
+                  alt=""
+                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+                />
                 <div>
                   <h1>{selectedContact.name || selectedContact.email}</h1>
                   <p>{isLoading ? "Syncing conversation…" : "Messages are saved securely"}</p>

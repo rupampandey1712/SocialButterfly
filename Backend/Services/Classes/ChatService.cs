@@ -13,15 +13,18 @@ public sealed class ChatService : IChatService
     private readonly ApplicationDbContext _context;
     private readonly IServiceBusService _serviceBus;
     private readonly IChatMessageStore _messageStore;
+    private readonly ILogger<ChatService>? _logger;
 
     public ChatService(
         ApplicationDbContext context,
         IServiceBusService serviceBus,
-        IChatMessageStore messageStore)
+        IChatMessageStore messageStore,
+        ILogger<ChatService>? logger = null)
     {
         _context = context;
         _serviceBus = serviceBus;
         _messageStore = messageStore;
+        _logger = logger;
     }
 
     public async Task<QueuedChatMessageDto> QueueMessageAsync(
@@ -50,10 +53,23 @@ public sealed class ChatService : IChatService
         }
 
         var messageId = request.ClientMessageId ?? Guid.NewGuid();
-        await _serviceBus.SendMessageAsync(
-            QueueName,
-            new ChatQueueMessage(messageId, senderId, request.ReceiverId, content, DateTime.UtcNow),
-            messageId.ToString("N"));
+        var queueMessage = new ChatQueueMessage(messageId, senderId, request.ReceiverId, content, DateTime.UtcNow);
+
+        // Immediately persist message to SQL so it is reliably available for both users
+        await _messageStore.PersistAsync(queueMessage, cancellationToken);
+
+        // Also publish to Service Bus for distributed subscribers/background functions if available
+        try
+        {
+            await _serviceBus.SendMessageAsync(
+                QueueName,
+                queueMessage,
+                messageId.ToString("N"));
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "Failed to publish chat message {MessageId} to Service Bus. Message was saved to SQL directly.", messageId);
+        }
 
         return new QueuedChatMessageDto { MessageId = messageId };
     }
