@@ -13,7 +13,7 @@
     "@react-google-maps/api": "^2.19.3",
     "@tailwindcss/vite": "^4.3.3",
     "autoprefixer": "^10.5.0",
-    "axios": "^1.18.0",
+    "axios": "^1.8.4",
     "bootstrap": "^5.2.3",
     "chart.js": "^4.4.2",
     "mdb-react-ui-kit": "^5.1.0",
