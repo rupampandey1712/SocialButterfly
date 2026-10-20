@@ -1,13 +1,15 @@
 import "./feed.css";
 import AllPost from "../post/allPosts";
+import Stories from "../stories/Stories";
 
 
 export default function Feeds() {
   return (
-    <div className="feed">
+    <main className="feed">
       <div className="feedWrapper">
-            <AllPost/>
+        <Stories />
+        <AllPost />
       </div>
-    </div>
+    </main>
   );
 }

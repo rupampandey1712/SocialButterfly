@@ -1,428 +1,568 @@
-.topbarContainer {
-  min-height: 68px;
-  width: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(18px);
-  border-bottom: 1px solid var(--social-border, #e2e8f0);
+/* ---------- Desktop / tablet left rail ---------- */
+
+.appNav {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  width: var(--ig-nav-width);
+  padding: 8px 12px 20px;
+  border-right: 1px solid var(--ig-border);
+  background: var(--ig-surface);
+  transition: width 300ms var(--ig-ease);
+}
+
+.navLogo {
   display: flex;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  padding: 0 24px;
-  box-shadow: 0 8px 30px rgba(21, 32, 51, 0.05);
+  height: 92px;
+  padding: 0 12px;
 }
 
-.topbarLeft {
-  flex: 2;
+.navLogo .appLogoText {
+  transition: opacity 200ms ease;
 }
 
-.logo {
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--social-primary, #2563eb);
+.navItems {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ig-text);
+  font-size: 16px;
+  text-align: left;
   cursor: pointer;
-  letter-spacing: 0;
+  transition: background 160ms ease;
 }
 
-.topbarLeft a {
+.navItem:hover {
+  background: var(--ig-surface-hover);
+}
+
+.navItem .navIcon {
+  transition: transform 200ms var(--ig-ease-spring);
+}
+
+.navItem:hover .navIcon {
+  transform: scale(1.1);
+}
+
+.navItem:active .navIcon {
+  transform: scale(0.9);
+}
+
+.navItem.isActive {
+  font-weight: 700;
+}
+
+.navIcon {
+  position: relative;
   display: inline-flex;
-  color: inherit;
-  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
 }
 
-.topbarLeft .appLogoName {
-  color: var(--social-primary, #2563eb);
+.navIcon svg {
+  font-size: 27px;
 }
 
-.topbarCenter {
-  flex: 4.8;
+.navLabel {
+  white-space: nowrap;
+  transition: opacity 180ms ease;
+}
+
+.navProfileImg {
+  border: 2px solid transparent;
+  transition: border-color 160ms ease;
+}
+
+.navProfileImg.isActive {
+  border-color: var(--ig-text);
+}
+
+.navBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid var(--ig-surface);
+  border-radius: 9px;
+  background: var(--ig-red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+  animation: badgePop 420ms var(--ig-ease-spring);
+}
+
+.navDot {
+  position: absolute;
+  top: 0;
+  right: -1px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ig-red);
+  animation: badgePop 420ms var(--ig-ease-spring);
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* Collapsed rail: when a panel is open or the window is narrow. */
+.appNav.isCollapsed {
+  width: var(--ig-nav-collapsed);
+}
+
+.appNav.isCollapsed .navLabel,
+.appNav.isCollapsed .appLogoText {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.navMore {
   position: relative;
 }
 
-.searchbar {
-  width: 100%;
-  height: 44px;
-  background-color: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  padding: 0 14px;
-  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
-}
-
-.searchbar:focus-within {
-  background: #ffffff;
-  border-color: rgba(37, 99, 235, 0.5);
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-}
-
-.searchIcon {
-  font-size: 20px !important;
-  color: var(--social-primary, #2563eb);
-  margin-right: 8px;
-}
-
-.searchInput {
-  border: none;
-  width: 100%;
-  background: transparent;
-  color: var(--social-text, #1e293b);
-  font-size: 14px;
-}
-
-.searchInput:focus {
-  outline: none;
-}
-
-.searchClearBtn {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: color 140ms ease, background 140ms ease;
-}
-
-.searchClearBtn:hover {
-  color: #475569;
-  background: #e2e8f0;
-}
-
-.searchDropdown {
+.navMoreMenu {
   position: absolute;
-  top: 52px;
+  bottom: 56px;
   left: 0;
-  right: 0;
-  background: #ffffff;
-  border: 1px solid var(--social-border, #e2e8f0);
-  border-radius: 18px;
-  box-shadow: 0 20px 45px rgba(21, 32, 51, 0.12);
-  z-index: 1000;
-  overflow: hidden;
-  max-height: 440px;
-  display: flex;
-  flex-direction: column;
-  animation: fadeInDown 180ms ease;
+  width: 240px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--ig-surface);
+  box-shadow: var(--ig-shadow-lg);
+  transform-origin: bottom left;
+  animation: menuIn 220ms var(--ig-ease-spring) both;
 }
 
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes menuIn {
+  from { opacity: 0; transform: scale(0.9) translateY(8px); }
+  to { opacity: 1; transform: none; }
 }
 
-.searchDropdownHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 18px;
-  border-bottom: 1px solid #f1f5f9;
-  background: #f8fafc;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--social-muted, #64748b);
-}
-
-.searchDropdownClose {
-  background: none;
-  border: none;
-  color: var(--social-primary, #2563eb);
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 2px 6px;
-}
-
-.searchDropdownBody {
-  overflow-y: auto;
-  padding: 8px 0;
-}
-
-.searchDropdownLoading,
-.searchDropdownEmpty {
-  padding: 28px 20px;
-  text-align: center;
-  color: var(--social-muted, #64748b);
-  font-size: 14px;
-}
-
-.searchDropdownSpinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid #e2e8f0;
-  border-top-color: var(--social-primary, #2563eb);
-  border-radius: 50%;
-  animation: spin 600ms linear infinite;
-  margin: 0 auto 10px;
-}
-
-.searchResultsList {
-  display: flex;
-  flex-direction: column;
-}
-
-.searchResultItem {
+.navMoreItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 18px;
-  transition: background-color 140ms ease;
-  border-bottom: 1px solid #f8fafc;
-}
-
-.searchResultItem:last-child {
-  border-bottom: none;
-}
-
-.searchResultItem:hover {
-  background-color: #f8fafc;
-}
-
-.searchResultAvatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  object-fit: cover;
-  flex-shrink: 0;
-  box-shadow: 0 4px 10px rgba(21, 32, 51, 0.08);
-}
-
-.searchResultDetails {
-  flex: 1;
-  min-width: 0;
-}
-
-.searchResultName {
-  margin: 0;
+  width: 100%;
+  padding: 14px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ig-text);
   font-size: 14px;
-  font-weight: 750;
-  color: var(--social-text, #1e293b);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 150ms ease;
 }
 
-.searchResultSelfTag {
-  font-size: 11px;
-  color: var(--social-muted, #64748b);
+.navMoreItem:hover {
+  background: var(--ig-surface-hover);
+}
+
+.navMoreCount {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--ig-red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Slide-out panels (Search / Notifications) ---------- */
+
+.navPanel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: var(--ig-nav-collapsed);
+  z-index: 1090;
+  display: flex;
+  flex-direction: column;
+  width: 397px;
+  border-right: 1px solid var(--ig-border);
+  border-radius: 0 16px 16px 0;
+  background: var(--ig-surface);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-110%);
+  transition: transform 340ms var(--ig-ease), opacity 240ms ease, visibility 0s linear 340ms;
+}
+
+.navPanel.isOpen {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: transform 340ms var(--ig-ease), opacity 200ms ease;
+}
+
+.navPanelTitle {
+  margin: 0;
+  padding: 24px 24px 28px;
+  font-size: 24px;
   font-weight: 600;
 }
 
-.searchResultEmail {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: var(--social-muted, #64748b);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.navPanelBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 12px 16px;
 }
 
-.searchResultBio {
-  margin: 2px 0 0;
-  font-size: 12px;
-  color: #475569;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.navPanelHint {
+  padding: 24px 12px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  text-align: center;
 }
 
-.searchResultActions {
+.navPanelSection {
+  margin: 16px 12px 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.navPanelEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.navPanelEmpty svg {
+  width: 62px;
+  height: 62px;
+  padding: 12px;
+  border: 2px solid var(--ig-text);
+  border-radius: 50%;
+}
+
+.navPanelEmpty h3 {
+  margin: 14px 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.navPanelEmpty p {
+  color: var(--ig-muted);
+  font-size: 14px;
+}
+
+.navSearchBox {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
+  margin: 0 16px 20px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--ig-elevated);
 }
 
-.searchResultActionBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  border: none;
+.navSearchIcon {
+  color: var(--ig-muted);
+  font-size: 20px !important;
+}
+
+.navSearchBox input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 16px;
+}
+
+.navSearchClear {
+  display: flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: #c7c7c7;
+  color: #fff;
   cursor: pointer;
-  text-decoration: none;
-  transition: transform 140ms ease, opacity 140ms ease;
 }
 
-.btnAddFriend {
-  background: var(--social-primary, #2563eb);
-  color: #ffffff;
-}
-
-.btnAddFriend:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-.btnAccept {
-  background: #10b981;
-  color: #ffffff;
-}
-
-.btnAccept:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: scale(1.02);
-}
-
-.btnMessage {
-  background: #eff6ff;
-  color: var(--social-primary, #2563eb);
-}
-
-.btnMessage:hover {
-  background: #dbeafe;
-}
-
-.searchResultFriendsBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #ecfdf5;
-  color: #059669;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 750;
-}
-
-.searchResultPendingBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  background: #fef3c7;
-  color: #b45309;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.topbarRight {
-  flex: 4;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 16px;
-  color: var(--social-text, #1e293b);
-}
-
-.topbarLinks {
+.navUserRow,
+.navNotification,
+.navRequestsRow {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--ig-text);
+  transition: background 150ms ease;
 }
 
-.topbarLink {
-  color: var(--social-muted, #64748b);
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 160ms ease;
+.navUserRow:hover,
+.navNotification:hover,
+.navRequestsRow:hover {
+  background: var(--ig-surface-hover);
 }
 
-.topbarLink:hover {
-  color: var(--social-primary, #2563eb);
-}
-
-.topbarLogoutBtn {
-  background: #f1f5f9;
-  color: #475569;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  font-weight: 750;
-  cursor: pointer;
-  transition: background-color 140ms ease, color 140ms ease;
-}
-
-.topbarLogoutBtn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fca5a5;
-}
-
-.topbarIcons {
+.navUserLink {
   display: flex;
+  flex: 1;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  min-width: 0;
 }
 
-.topbarIconItem {
-  width: 38px;
-  height: 38px;
+.navUserText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.navUserText strong {
+  font-weight: 600;
+}
+
+.navUserText span {
+  overflow: hidden;
+  color: var(--ig-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navUserAction {
+  flex-shrink: 0;
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.navUserBadge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: var(--social-primary, #2563eb);
-  cursor: pointer;
-  position: relative;
-  text-decoration: none;
-  transition: transform 160ms ease, background-color 160ms ease;
+  gap: 4px;
+  flex-shrink: 0;
+  color: var(--ig-muted);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.topbarIconItem:hover {
-  background: #e2e8f0;
-  transform: translateY(-1px);
+.navNotification p {
+  flex: 1;
+  margin: 0;
+  font-size: 14px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
 }
 
-.topbarIconBadge {
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  background-color: #ef4444;
-  border-radius: 50%;
-  color: white;
-  position: absolute;
-  top: -3px;
-  right: -3px;
+.navNotification strong {
+  font-weight: 600;
+}
+
+.navNotification time {
+  color: var(--ig-muted);
+}
+
+.navNotification.isUnread {
+  background: var(--ig-unread);
+}
+
+.navNotificationThumb {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.navRequestsRow {
+  margin-bottom: 8px;
+}
+
+.navRequestsIcon {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
-  font-weight: 800;
-}
-
-.topbarImg {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--ig-border);
   border-radius: 50%;
-  object-fit: cover;
+}
+
+.navRequestsDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ig-blue);
+}
+
+/* ---------- Mobile top bar + bottom tab bar ---------- */
+
+.mobileTopbar,
+.mobileTabbar {
+  display: none;
+}
+
+@media (max-width: 1263px) {
+  .appNav { width: var(--ig-nav-collapsed); }
+  .appNav .navLabel,
+  .appNav .appLogoText { opacity: 0; pointer-events: none; }
+}
+
+@media (max-width: 767px) {
+  .appNav { display: none; }
+
+  .mobileTopbar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 8px 0 16px;
+    border-bottom: 1px solid var(--ig-border);
+    background: var(--ig-surface);
+  }
+
+  .mobileTopbar .appLogoMark { width: 2.2rem; height: 2.2rem; }
+  .mobileTopbar .appLogoName { font-size: 1.1rem; }
+
+  .mobileTopbarActions {
+    display: flex;
+    align-items: center;
+  }
+
+  .mobileTabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1100;
+    display: flex;
+    justify-content: space-around;
+    height: 56px;
+    border-top: 1px solid var(--ig-border);
+    background: var(--ig-surface);
+  }
+
+  .mobileTab {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: none;
+    color: var(--ig-text);
+    transition: transform 140ms ease;
+  }
+
+  .mobileTab:active { transform: scale(0.85); }
+  .mobileTab svg { font-size: 28px; }
+
+  .navPanel {
+    top: 60px;
+    bottom: 56px;
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+    transform: translateY(-16px);
+  }
+}
+
+/* ---------- Create chooser (Post / Story) ---------- */
+
+.createChooser {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 400px;
+  padding: 0 12px 16px;
+}
+
+.createChooser h2 {
+  margin: 0 -12px 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--ig-border-soft);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.createChoice {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--ig-text);
+  text-align: left;
   cursor: pointer;
-  border: 2px solid #ffffff;
-  box-shadow: 0 6px 16px rgba(21, 32, 51, 0.12);
-  transition: transform 140ms ease;
+  transition: background 160ms ease, transform 200ms var(--ig-ease-spring);
 }
 
-.topbarImg:hover {
-  transform: scale(1.04);
+.createChoice:hover {
+  background: var(--ig-surface-hover);
+  transform: translateX(4px);
 }
 
-@media screen and (max-width: 768px) {
-  .topbarContainer {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 12px 16px;
-  }
-
-  .topbarCenter {
-    order: 3;
-    flex: 1 0 100%;
-  }
-
-  .topbarLinks {
-    display: none;
-  }
+.createChoice > span:last-child {
+  display: flex;
+  flex-direction: column;
+  font-size: 15px;
 }
 
+.createChoice small {
+  color: var(--ig-muted);
+  font-size: 13px;
+}
+
+.createChoiceIcon {
+  display: flex;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--ig-elevated);
+}
+
+.createChoiceIcon.isStory {
+  background: var(--ig-gradient);
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  .createChooser { width: 100%; }
+}
+
+.createChoiceIcon.isAi {
+  background: linear-gradient(135deg, #4f5bd5, #962fbf);
+  color: #fff;
+}

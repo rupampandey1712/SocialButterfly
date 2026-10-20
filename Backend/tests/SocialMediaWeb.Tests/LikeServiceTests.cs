@@ -46,6 +46,35 @@ public class LikeServiceTests
         Assert.Equal(-1, count);
     }
 
+    [Fact]
+    public async Task ToggleLikeAsync_LikesThenUnlikes()
+    {
+        await using var context = TestDbContextFactory.Create();
+        SeedUserAndPost(context);
+        var service = new LikeService(context);
+
+        var liked = await service.ToggleLikeAsync(postId: 10, userId: 1);
+        Assert.NotNull(liked);
+        Assert.True(liked!.IsLiked);
+        Assert.Equal(1, liked.LikeCount);
+
+        var unliked = await service.ToggleLikeAsync(postId: 10, userId: 1);
+        Assert.NotNull(unliked);
+        Assert.False(unliked!.IsLiked);
+        Assert.Equal(0, unliked.LikeCount);
+        Assert.Empty(context.Likes);
+    }
+
+    [Fact]
+    public async Task ToggleLikeAsync_WithMissingPost_ReturnsNull()
+    {
+        await using var context = TestDbContextFactory.Create();
+        SeedUserAndPost(context);
+        var service = new LikeService(context);
+
+        Assert.Null(await service.ToggleLikeAsync(postId: 99, userId: 1));
+    }
+
     private static void SeedUserAndPost(ApplicationDbContext context)
     {
         context.Users.Add(new User { Id = 1, Email = "user@test.com", Role = "User" });

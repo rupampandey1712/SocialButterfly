@@ -13,3 +13,7 @@ Dockerfile
 README.md
 
 Backend/tests/
+
+# Local Azurite blob data and local-only notes
+storage/
+TEST_ACCOUNTS.local.md

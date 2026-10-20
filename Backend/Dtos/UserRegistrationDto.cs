@@ -25,6 +25,13 @@ namespace SocialMediaWeb.Dtos
 
         public string? Information { get; set; }
 
+        public string? Username { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        /// <summary>Honeypot: hidden from people, so only bots fill it in.</summary>
+        public string? Website { get; set; }
+
 
     }
 }

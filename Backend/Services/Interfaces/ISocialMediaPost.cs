@@ -13,5 +13,13 @@ namespace SocialMediaWeb.Services.Interfaces
 
         Task<List<SocialMediaPost>> GetUserpost(int id);
 
+        Task<List<PostFeedDto>> GetFeedAsync(int? viewerId, int skip, int take);
+
+        Task<List<PostFeedDto>> GetUserPostsAsync(int userId, int? viewerId);
+
+        Task<PostFeedDto?> GetPostAsync(int postId, int? viewerId);
+
+        Task<bool> DeletePostAsync(int postId, int userId);
+
     }
 }

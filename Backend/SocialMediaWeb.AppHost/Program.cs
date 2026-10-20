@@ -12,6 +12,8 @@ var serviceBus = builder.AddAzureServiceBus("servicebus")
 serviceBus.AddServiceBusQueue("post-notifications");
 serviceBus.AddServiceBusQueue("friend-requests");
 serviceBus.AddServiceBusQueue("chat-messages");
+serviceBus.AddServiceBusQueue("verification-codes");
+serviceBus.AddServiceBusQueue("image-generation");
 
 // Azure Storage (Azurite) Emulator
 var storage = builder.AddAzureStorage("storage")
@@ -25,6 +27,10 @@ builder.AddAzureFunctionsProject<Projects.SocialMediaWeb_ChatFunctions>("chat-fu
     .WithEnvironment("ServiceBusConnection", serviceBus.Resource.ConnectionStringExpression)
     .WithEnvironment("ConnectionStrings__Con", database.Resource.ConnectionStringExpression)
     .WithEnvironment("ChatQueueName", "chat-messages")
+    .WithEnvironment("PostNotificationsQueueName", "post-notifications")
+    .WithEnvironment("FriendRequestsQueueName", "friend-requests")
+    .WithEnvironment("VerificationQueueName", "verification-codes")
+    .WithEnvironment("ImageGenerationQueueName", "image-generation")
     .WithEnvironment("DurableTaskHubName", "chatdelivery")
     .WaitFor(database)
     .WaitFor(serviceBus)

@@ -10,5 +10,7 @@ namespace SocialMediaWeb.Services.Interfaces
         Task<int> GetLikeCountAsync(int postId);
 
         Task<int> LikeCountAsync(int postId, int id);
+
+        Task<LikeToggleResultDto?> ToggleLikeAsync(int postId, int userId);
     }
 }

@@ -8,5 +8,7 @@ namespace SocialMediaWeb.Services.Interfaces
         Task<Comment> CreateCommentAsync(CreateCommentDto commentCreateDto);
         Task<List<Comment>> GetCommentAsync(int postId);
         Task<List<Comment>> GetCommentsAsync();
+        Task<List<CommentResponseDto>> GetPostCommentsAsync(int postId);
+        Task<CommentResponseDto> AddCommentAsync(CreateCommentDto commentCreateDto);
     }
 }

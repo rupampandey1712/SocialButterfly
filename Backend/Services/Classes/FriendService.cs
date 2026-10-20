@@ -10,11 +10,16 @@ namespace SocialMediaWeb.Services.Classes
     {
         private readonly ApplicationDbContext _context;
         private readonly IBlobStorageService? _blobStorage;
+        private readonly INotificationPublisher? _notifications;
 
-        public FriendService(ApplicationDbContext context, IBlobStorageService? blobStorage = null)
+        public FriendService(
+            ApplicationDbContext context,
+            IBlobStorageService? blobStorage = null,
+            INotificationPublisher? notifications = null)
         {
             _context = context;
             _blobStorage = blobStorage;
+            _notifications = notifications;
         }
 
         public async Task<ActionResult<FriendDto>> SendFriendRequest(FriendDto friendDto)
@@ -50,6 +55,11 @@ namespace SocialMediaWeb.Services.Classes
             _context.Friends.Add(friend);
             await _context.SaveChangesAsync();
 
+            if (_notifications != null)
+            {
+                await _notifications.PublishAsync(NotificationTypes.FriendRequestSent, friendDto.SenderId, friendDto.ReceiverId);
+            }
+
             var friendDtoResponse = new FriendDto
             {
                 Id = friend.Id,
@@ -82,6 +92,11 @@ namespace SocialMediaWeb.Services.Classes
 
             _context.Entry(friend).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+
+            if (_notifications != null)
+            {
+                await _notifications.PublishAsync(NotificationTypes.FriendRequestAccepted, friend.ReceiverId!.Value, friend.SenderId);
+            }
 
             var response = new FriendDto
             {

@@ -10,11 +10,12 @@ namespace SocialMediaWeb.Services.Classes
     {
 
         private readonly ApplicationDbContext _context;
-       
+        private readonly INotificationPublisher? _notifications;
 
-        public LikeService(ApplicationDbContext context)
+        public LikeService(ApplicationDbContext context, INotificationPublisher? notifications = null)
         {
             _context = context;
+            _notifications = notifications;
         }
 
         public async Task<int> GetLikeCountAsync(int postId)
@@ -101,6 +102,40 @@ namespace SocialMediaWeb.Services.Classes
 
 
             return likeCount;
+        }
+
+        public async Task<LikeToggleResultDto?> ToggleLikeAsync(int postId, int userId)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId && !u.IsDeleted);
+            var postExists = await _context.Posts.AnyAsync(p => p.Id == postId);
+            if (!userExists || !postExists)
+                return null;
+
+            var existingLike = await _context.Likes.FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == userId);
+
+            if (existingLike != null)
+            {
+                _context.Likes.Remove(existingLike);
+            }
+            else
+            {
+                _context.Likes.Add(new Like { PostId = postId, UserId = userId, CreatedAt = DateTime.UtcNow });
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (_notifications != null)
+            {
+                var type = existingLike == null ? NotificationTypes.PostLiked : NotificationTypes.PostUnliked;
+                await _notifications.PublishAsync(type, userId, postId: postId);
+            }
+
+            return new LikeToggleResultDto
+            {
+                PostId = postId,
+                LikeCount = await _context.Likes.CountAsync(l => l.PostId == postId),
+                IsLiked = existingLike == null
+            };
         }
 
         private bool IsValidFoodData(LikesDto dto)

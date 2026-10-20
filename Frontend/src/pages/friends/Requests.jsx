@@ -21,7 +21,7 @@ const MyFriends = () => {
     }
     try {
       setIsLoading(true);
-      const response = await axios.get(getApiUrl(`/api/Friends/${currentUserId}/requestuser`));
+      const response = await axios.get(getApiUrl("/api/Friends/me/requestuser"));
       setRequests(response.data?.value || []);
     } catch (error) {
       console.error("Error fetching friend requests:", error);
@@ -37,7 +37,7 @@ const MyFriends = () => {
   const handleAccept = async (senderId, senderName) => {
     try {
       setProcessingId(senderId);
-      await axios.post(getApiUrl(`/api/Friends/${senderId}/${currentUserId}`));
+      await axios.post(getApiUrl(`/api/Friends/${senderId}`));
       setRequests((prev) => prev.filter((req) => req.id !== senderId));
       setActionMessage(`You are now friends with ${senderName || "user"}!`);
       setTimeout(() => setActionMessage(""), 4000);

@@ -1,17 +1,56 @@
-.feed{
-    flex:5.5;
-    min-width: 0;
+.feed {
+  flex: 0 1 630px;
+  min-width: 0;
 }
 
-.feedWrapper{
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
+.feedWrapper {
+  max-width: 470px;
+  margin: 0 auto;
+  padding: 0;
 }
 
-@media screen and (max-width: 900px) {
-    .feedWrapper {
-        gap: 16px;
-    }
+.feedEmpty,
+.feedEnd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.feedEmpty h3,
+.feedEnd h4 {
+  margin: 12px 0 6px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.feedEmpty p,
+.feedEnd p {
+  max-width: 320px;
+  margin: 0 0 12px;
+  color: var(--ig-muted);
+  font-size: 14px;
+}
+
+.feedEmptyIcon,
+.feedEndCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+  color: #fff;
+  animation: checkIn 600ms var(--ig-ease-spring) both;
+}
+
+.feedEmptyIcon svg,
+.feedEndCheck svg {
+  font-size: 40px;
+}
+
+@media (max-width: 767px) {
+  .feedWrapper { padding: 0 12px; }
 }

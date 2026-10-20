@@ -14,5 +14,11 @@ namespace SocialMediaWeb.Dtos
         public string? Token { get; set; }
 
         public string? ImagePath { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Username { get; set; }
+
+        public string? Theme { get; set; }
     }
 }

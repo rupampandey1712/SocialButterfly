@@ -1,217 +1,437 @@
-import React, { useState } from 'react';
-import { useNavigate,Link } from "react-router-dom";
-import 'react-datepicker/dist/react-datepicker.css';
-import axios from 'axios';
-import './register.css';
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
+import { AddAPhotoOutlined, CelebrationRounded, PhotoCameraRounded } from "@mui/icons-material";
+import AuthShell from "../auth/AuthShell";
+import {
+  AuthError,
+  DevCodeHint,
+  FloatingField,
+  OtpInput,
+  PasswordMeter,
+  PasswordToggle,
+  useCountdown,
+} from "../auth/AuthFields";
+import {
+  apiError,
+  checkAvailability,
+  confirmCode,
+  isEmail,
+  isPhone,
+  isUsername,
+  login,
+  register,
+  sendCode,
+  updateSettings,
+} from "../../utils/account";
+import { startSession, updateSessionProfile } from "../../utils/session";
+import { honeypotProps } from "../../utils/botCheck";
 
+const minimumAge = 13;
+const steps = ["details", "verify", "profile", "done"];
 
-function Register(){
+function ageFrom(dob) {
+  if (!dob) return null;
+  const birth = new Date(dob);
+  const now = new Date();
+  const age = now.getFullYear() - birth.getFullYear();
+  const beforeBirthday = now.getMonth() < birth.getMonth() ||
+    (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate());
+  return beforeBirthday ? age - 1 : age;
+}
 
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const role="User";
+/** Debounced availability lookup; status is "checking" | "valid" | "invalid" | undefined. */
+function useAvailability(field, value, isFormatValid) {
+  const [state, setState] = useState({ status: undefined, suggestion: null });
+
+  useEffect(() => {
+    if (!value) {
+      setState({ status: undefined, suggestion: null });
+      return undefined;
+    }
+    if (!isFormatValid) {
+      setState({ status: "invalid", suggestion: null });
+      return undefined;
+    }
+    setState((prev) => ({ ...prev, status: "checking" }));
+    let isActive = true;
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkAvailability({ [field]: value });
+        const available = result[`${field}Available`];
+        if (isActive) setState({ status: available ? "valid" : "invalid", suggestion: result.suggestedUsername });
+      } catch {
+        if (isActive) setState({ status: undefined, suggestion: null });
+      }
+    }, 450);
+    return () => { isActive = false; clearTimeout(timer); };
+  }, [field, value, isFormatValid]);
+
+  return state;
+}
+
+/**
+ * Instagram-style sign up: details (mobile or email) -> confirmation code ->
+ * profile photo & bio -> welcome. The code is delivered through Service Bus and
+ * the Azure Function; the photo is stored in Azure Blob Storage.
+ */
+export default function Register() {
+  const [step, setStep] = useState("details");
+  const [account, setAccount] = useState(null);
+  const stepIndex = steps.indexOf(step);
+
+  return (
+    <AuthShell footer={step === "details" ? <>Have an account? <Link to="/login">Log in</Link></> : null}>
+      <div className="authProgress" aria-hidden="true">
+        {steps.slice(0, 3).map((name, index) => (
+          <span key={name} className={index === stepIndex ? "isActive" : index < stepIndex ? "isDone" : ""} />
+        ))}
+      </div>
+
+      <div key={step} className="authStep">
+        {step === "details" && (
+          <DetailsStep onCreated={(created) => { setAccount(created); setStep("verify"); }} />
+        )}
+        {step === "verify" && account && <VerifyStep account={account} onVerified={() => setStep("profile")} />}
+        {step === "profile" && account && <ProfileStep account={account} onDone={() => setStep("done")} />}
+        {step === "done" && account && <WelcomeStep account={account} />}
+      </div>
+    </AuthShell>
+  );
+}
+
+function DetailsStep({ onCreated }) {
+  const [method, setMethod] = useState("phone");
+  const [contact, setContact] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [usernameTouched, setUsernameTouched] = useState(false);
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [dob, setDob] = useState("");
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [information, SetInformation] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [website, setWebsite] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const navigate = useNavigate();
+  const trimmedContact = contact.trim();
+  const contactFormatValid = method === "phone" ? isPhone(trimmedContact) : isEmail(trimmedContact);
+  const contactCheck = useAvailability(method === "phone" ? "phone" : "email", trimmedContact, contactFormatValid);
+  const usernameCheck = useAvailability("username", username, isUsername(username));
+  const age = ageFrom(dob);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImageFile(null);
-      setImagePreview(null);
+  // Suggest a username from the full name until the member edits it themselves.
+  useEffect(() => {
+    if (usernameTouched || name.trim().length < 2) return undefined;
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkAvailability({ name: name.trim() });
+        if (result.suggestedUsername) setUsername(result.suggestedUsername);
+      } catch {
+        // Suggestions are a convenience.
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [name, usernameTouched]);
+
+  const canSubmit =
+    contactFormatValid && contactCheck.status === "valid" &&
+    name.trim().length > 0 &&
+    usernameCheck.status === "valid" &&
+    password.length >= 8 &&
+    age !== null && age >= minimumAge;
+
+  const submit = async (event) => {
+    event.preventDefault();
+    if (!canSubmit || isLoading) return;
+    setIsLoading(true);
+    setError("");
+    try {
+      const created = await register({
+        Name: name.trim(),
+        Username: username,
+        [method === "phone" ? "PhoneNumber" : "Email"]: trimmedContact,
+        Password: password,
+        Dob: new Date(dob).toISOString(),
+        Website: website,
+      });
+      onCreated({ ...created, password, target: trimmedContact, method });
+    } catch (err) {
+      setError(apiError(err, "We couldn't create your account. Please try again."));
+      setIsLoading(false);
     }
   };
 
-  async function registerUser(e) {
-    if (e && e.preventDefault) e.preventDefault();
+  let contactStatus;
+  let contactHint;
+  if (trimmedContact) {
+    if (!contactFormatValid) {
+      contactStatus = trimmedContact.length > 6 ? "invalid" : undefined;
+      contactHint = method === "phone" ? "Include your country code, e.g. +91 98765 43210." : "Enter a valid email address.";
+    } else {
+      contactStatus = contactCheck.status;
+      if (contactCheck.status === "invalid") {
+        contactHint = method === "phone" ? "Another account is using this number." : "Another account is using this email.";
+      }
+    }
+  }
 
-    if (!name || !email || !password) {
-      alert("Please fill in Name, Email, and Password.");
+  return (
+    <form className="authForm" onSubmit={submit} noValidate>
+      <input {...honeypotProps} value={website} onChange={(e) => setWebsite(e.target.value)} />
+      <p className="authSubtitle" style={{ fontSize: 16, fontWeight: 600 }}>
+        Sign up to see photos and videos from your friends.
+      </p>
+
+      <div className={`authSegment ${method === "email" ? "isRight" : ""}`} role="tablist">
+        <span className="authSegmentPill" />
+        <button type="button" role="tab" aria-selected={method === "phone"} className={method === "phone" ? "isActive" : ""}
+          onClick={() => { setMethod("phone"); setContact(""); }}>
+          Mobile number
+        </button>
+        <button type="button" role="tab" aria-selected={method === "email"} className={method === "email" ? "isActive" : ""}
+          onClick={() => { setMethod("email"); setContact(""); }}>
+          Email
+        </button>
+      </div>
+
+      <FloatingField
+        key={method}
+        label={method === "phone" ? "Mobile number (e.g. +91 98765 43210)" : "Email address"}
+        type={method === "phone" ? "tel" : "email"}
+        inputMode={method === "phone" ? "tel" : "email"}
+        autoComplete={method === "phone" ? "tel" : "email"}
+        value={contact}
+        onChange={setContact}
+        status={contactStatus}
+        hint={contactHint}
+        autoFocus
+      />
+      <FloatingField label="Full name" value={name} onChange={setName} autoComplete="name" maxLength={60} />
+      <FloatingField
+        label="Username"
+        value={username}
+        onChange={(value) => { setUsernameTouched(true); setUsername(value.toLowerCase().replace(/\s/g, "")); }}
+        autoComplete="username"
+        maxLength={30}
+        status={usernameCheck.status}
+        hint={
+          username && !isUsername(username)
+            ? "Use 3-30 letters, numbers, periods or underscores."
+            : usernameCheck.status === "invalid" ? "This username isn't available." : undefined
+        }
+      />
+      {usernameCheck.status === "invalid" && usernameCheck.suggestion && (
+        <div className="authSuggestions">
+          <span className="authFieldHint">Try:</span>
+          <button type="button" onClick={() => { setUsernameTouched(true); setUsername(usernameCheck.suggestion); }}>
+            {usernameCheck.suggestion}
+          </button>
+        </div>
+      )}
+      <FloatingField
+        label="Password"
+        type={showPassword ? "text" : "password"}
+        value={password}
+        onChange={setPassword}
+        autoComplete="new-password"
+        status={password.length >= 8 ? "valid" : undefined}
+        hint={password && password.length < 8 ? "Use at least 8 characters." : undefined}
+        action={password && <PasswordToggle visible={showPassword} onToggle={() => setShowPassword((v) => !v)} />}
+      />
+      <PasswordMeter password={password} />
+      <FloatingField
+        label="Birthday"
+        type="date"
+        value={dob}
+        onChange={setDob}
+        max={new Date().toISOString().slice(0, 10)}
+        status={dob ? (age >= minimumAge ? "valid" : "invalid") : undefined}
+        hint={dob && age < minimumAge ? `You need to be at least ${minimumAge} to sign up.` : "This won't be part of your public profile."}
+      />
+
+      <p className="authTerms">
+        By signing up, you agree to our Terms, Privacy Policy and Cookies Policy. We'll send a code to confirm
+        your {method === "phone" ? "number" : "email"}.
+      </p>
+
+      <button type="submit" className={`authPrimary ${isLoading ? "isLoading" : ""}`} disabled={!canSubmit || isLoading}>
+        <span>Sign up</span>
+      </button>
+      <AuthError message={error} />
+    </form>
+  );
+}
+
+function VerifyStep({ account, onVerified }) {
+  const [sent, setSent] = useState(null);
+  const [code, setCode] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [codeError, setCodeError] = useState(false);
+  const [resendIn, startResendTimer] = useCountdown(30);
+  const requested = useRef(false);
+
+  const request = async () => {
+    setError("");
+    try {
+      setSent(await sendCode(account.target, "Verify"));
+      startResendTimer();
+    } catch (err) {
+      setError(apiError(err, "We couldn't send your code."));
+    }
+  };
+
+  useEffect(() => {
+    // StrictMode mounts effects twice in development; send only one code.
+    if (requested.current) return;
+    requested.current = true;
+    request();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const verify = async (value = code) => {
+    if (value.length !== 6 || isLoading) return;
+    setIsLoading(true);
+    setError("");
+    setCodeError(false);
+    try {
+      await confirmCode(account.target, "Verify", value);
+      // Sign in with the password they just chose so the flow continues seamlessly.
+      startSession(await login(account.username, account.password));
+      onVerified();
+    } catch (err) {
+      setCodeError(true);
+      setError(apiError(err, "That code isn't valid."));
+      setIsLoading(false);
+    }
+  };
+
+  const isPhoneTarget = account.method === "phone";
+
+  return (
+    <form className="authForm" onSubmit={(e) => { e.preventDefault(); verify(); }} noValidate>
+      <div className="authWelcome" style={{ paddingTop: 0 }}>
+        <div className="authWelcomeIcon" style={{ width: 72, height: 72, fontSize: 32 }}>
+          {isPhoneTarget ? "📱" : "✉️"}
+        </div>
+        <h1 className="authTitle">{isPhoneTarget ? "Confirm your mobile number" : "Confirm your email"}</h1>
+        <p className="authSubtitle">
+          Enter the 6-digit code we sent to <strong>{sent?.destination || account.target}</strong>.
+        </p>
+      </div>
+
+      <OtpInput
+        value={code}
+        onChange={(value) => { setCode(value); setCodeError(false); }}
+        onComplete={verify}
+        disabled={isLoading}
+        hasError={codeError}
+      />
+
+      <div className="otpMeta">
+        <span>{sent ? "Code expires in 10 minutes" : "Sending code…"}</span>
+        {resendIn > 0 ? (
+          <span>Resend in 0:{String(resendIn).padStart(2, "0")}</span>
+        ) : (
+          <button type="button" className="igLinkButton" onClick={request}>Resend code</button>
+        )}
+      </div>
+
+      <button type="submit" className={`authPrimary ${isLoading ? "isLoading" : ""}`} disabled={code.length !== 6 || isLoading}>
+        <span>Next</span>
+      </button>
+
+      <DevCodeHint code={sent?.devCode} onFill={(value) => { setCode(value); verify(value); }} />
+      <AuthError message={error} />
+    </form>
+  );
+}
+
+function ProfileStep({ account, onDone }) {
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [bio, setBio] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview]);
+
+  const choose = (selected) => {
+    if (!selected?.type.startsWith("image/")) return;
+    setFile(selected);
+    setPreview(URL.createObjectURL(selected));
+  };
+
+  const save = async () => {
+    if (!file && !bio.trim()) {
+      onDone();
       return;
     }
-
-    setIsSubmitting(true);
-    const formattedDate = dob ? new Date(dob).toISOString() : new Date().toISOString();
-
-    const formData = new FormData();
-    formData.append("Name", name);
-    formData.append("Email", email);
-    formData.append("Password", password);
-    formData.append("Dob", formattedDate);
-    formData.append("Role", role);
-    if (imageFile) {
-      formData.append("ImageFile", imageFile);
-    }
-    formData.append("Information", information || "");
-
+    setIsSaving(true);
+    setError("");
     try {
-      await axios.post("https://localhost:7151/api/Account/register", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      const settings = await updateSettings(account.id, {
+        ImageFile: file || undefined,
+        Information: bio.trim() || undefined,
       });
-      alert('Registration successful! Please sign in.');
-      navigate('/');
-    } catch (error) {
-      console.error("Registration failed:", error);
-      const errorMsg = error.response?.data || error.message || "Registration failed. Please try again.";
-      alert(typeof errorMsg === 'string' ? errorMsg : JSON.stringify(errorMsg));
-    } finally {
-      setIsSubmitting(false);
+      updateSessionProfile({ imagePath: settings.imagePath });
+      onDone();
+    } catch (err) {
+      setError(apiError(err, "We couldn't save your profile."));
+      setIsSaving(false);
     }
-  } 
-  
-  
-    return (
+  };
 
+  return (
+    <div className="authForm">
+      <h1 className="authTitle">Add a profile photo</h1>
+      <p className="authSubtitle">Add a profile photo so your friends know it's you.</p>
 
-      <section className="auth-page">
-  <div className="container h-100">
-    <div className="row d-flex justify-content-center align-items-center h-100">
-      <div className="col-lg-12 col-xl-11">
-        <div className="card text-black auth-card">
-          <div className="card-body p-md-5">
-            <div className="row justify-content-center">
-              <div className="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+      <label className="authAvatarPicker">
+        {preview ? (
+          <span className="igRing"><img src={preview} alt="Profile preview" /></span>
+        ) : (
+          <span className="authAvatarPlaceholder"><AddAPhotoOutlined /></span>
+        )}
+        <span className="authAvatarBadge"><PhotoCameraRounded /></span>
+        <input type="file" accept="image/*" hidden onChange={(e) => choose(e.target.files?.[0])} />
+      </label>
 
-                <p className="text-center h1 fw-bold mb-2 mx-1 mx-md-4 mt-4">Create account</p>
-                <p className="auth-subtitle text-center mb-5">Join Social Butterfly and start sharing with your circle.</p>
+      <textarea
+        className="authTextarea"
+        placeholder="Write a short bio (optional)"
+        value={bio}
+        maxLength={150}
+        onChange={(e) => setBio(e.target.value)}
+      />
+      <span className="authFieldHint" style={{ textAlign: "right" }}>{bio.length}/150</span>
 
-                <form className="mx-1 mx-md-4">
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-user fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                      <input type="text" id="form3Example1c" className="form-control" value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-              }} placeholder='Your Name'/>
-                    </div>
-                  </div>
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-calendar fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                
-                   <input type="date" id="form3Example2c" className="form-control" value={dob}
-                onChange={(e) => {
-                  setDob(e.target.value)
-              }} placeholder='Your Dob'/> 
-                    </div>
-                  </div>
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-envelope fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                      <input type="email" id="form3Example3c" className="form-control" value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-              }} placeholder='Your Email'/>
-                    </div>
-                  </div>
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-lock fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                      <input type="password" id="form3Example4c" className="form-control" value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-              }} placeholder='Password'/>
-                    </div>
-                  </div>
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-image fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                      <label htmlFor="form3Example4cd" className="form-label text-muted small mb-1">Profile Picture</label>
-                      <input
-                        type="file"
-                        id="form3Example4cd"
-                        className="form-control"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                      />
-                    </div>
-                  </div>
-
-                  {imagePreview && (
-                    <div className="d-flex justify-content-center mb-4">
-                      <div className="text-center">
-                        <img
-                          src={imagePreview}
-                          alt="Profile Preview"
-                          style={{
-                            width: "90px",
-                            height: "90px",
-                            objectFit: "cover",
-                            borderRadius: "50%",
-                            border: "3px solid #1877f2",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
-                          }}
-                        />
-                        <div className="small text-muted mt-1">Profile Preview</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="d-flex flex-row align-items-center mb-4">
-                    <i className="fas fa-info-circle fa-lg me-3 fa-fw"></i>
-                    <div className="form-outline flex-fill mb-0">
-                      <input type="text" id="form3Example5cd" className="form-control" value={information}  onChange={(e) => {
-                  SetInformation(e.target.value)
-              }} placeholder="Bio / Information"/>
-                    </div>
-                  </div>
-
-                  <div className="form-check d-flex justify-content-center mb-5">
-                    <input className="form-check-input me-2" type="checkbox" value="" id="form2Example3c" />
-                    <label className="form-check-label" htmlFor="form2Example3">
-                      I agree all statements in <a href="#!">Terms of service</a>
-                    </label>
-                  </div>
-
-                  <div className="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-lg"
-                      onClick={registerUser}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? "Creating account..." : "Register"}
-                    </button>
-                  </div>
-                
-                  <p>
-                       Already registered <Link to='/'>Login</Link>
-                   </p>
-    
-
-                </form>
-
-              </div>
-              <div className="col-md-10 col-lg-6 col-xl-7 d-flex align-items-center order-1 order-lg-2 auth-visual">
-
-                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-registration/draw1.webp"
-                  className="img-fluid" alt=''/>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <button type="button" className={`authPrimary ${isSaving ? "isLoading" : ""}`} onClick={save} disabled={isSaving}>
+        <span>{file || bio.trim() ? "Save and continue" : "Skip for now"}</span>
+      </button>
+      <AuthError message={error} />
     </div>
-  </div>
-</section>
-       
-      );
-    }
-   
-export default Register;
+  );
+}
+
+function WelcomeStep({ account }) {
+  useEffect(() => {
+    const timer = setTimeout(() => window.location.assign("/"), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="authWelcome">
+      <div className="authWelcomeIcon"><CelebrationRounded /></div>
+      <h1 className="authTitle" style={{ fontSize: 22 }}>Welcome to SocialButterfly</h1>
+      <p className="authSubtitle">
+        You're all set, <strong>@{account.username}</strong>. Taking you to your feed…
+      </p>
+      <button type="button" className="authPrimary" onClick={() => window.location.assign("/")}>
+        <span>Go to feed</span>
+      </button>
+      <button type="button" className="authLink" style={{ marginTop: 14 }} onClick={() => window.location.assign("/explore")}>
+        Find people to follow
+      </button>
+    </div>
+  );
+}

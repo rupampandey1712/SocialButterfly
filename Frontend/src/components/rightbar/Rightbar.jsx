@@ -1,95 +1,105 @@
 import "./rightbar.css";
-import { Users } from "../../dummyData";
-import Online from "../online/Online";
-import { useState,useEffect } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import FollowButton from "../follow/FollowButton";
+import { fetchSuggestions } from "../../utils/account";
+import { getCurrentUser, logout } from "../../utils/session";
 import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
 
-export default function Rightbar({ profile }) {
-  const HomeRightbar = () => {
-    return (
-      <>
-        <div className="birthdayContainer">
-          <img className="birthdayImg" src="assets/gift.png" alt="" />
-          <span className="birthdayText">
-            <b>Pola Foster</b> and <b>3 other friends</b> have a birhday today.
-          </span>
-        </div>
-        <img className="rightbarAd" src="assets/ad.png" alt="" />
-        <h4 className="rightbarTitle">Online Friends</h4>
-        <ul className="rightbarFriendList">
-          {Users.map((u) => (
-            <Online key={u.id} user={u} />
-          ))}
-        </ul>
-      </>
-    );
-  };
+const suggestionLimit = 5;
 
-  const ProfileRightbar = () => {
+/** Instagram's right column: the signed-in account plus "Suggested for you". */
+export default function Rightbar() {
+  const user = getCurrentUser();
+  const [suggestions, setSuggestions] = useState(null);
 
-    const [friends,setFriends] = useState([]);
-    const id = sessionStorage.getItem('Id')
+  useEffect(() => {
+    if (!user.id) {
+      setSuggestions([]);
+      return;
+    }
+    let isActive = true;
+    fetchSuggestions(user.id, suggestionLimit)
+      .then((data) => isActive && setSuggestions(data))
+      // On failure show nothing rather than "you're following everyone".
+      .catch(() => isActive && setSuggestions(false));
+    return () => { isActive = false; };
+  }, [user.id]);
 
-    useEffect(()=>{
-      if (!id) {
-        setFriends([]);
-        return;
-      }
-      axios.get(getApiUrl(`/api/Friends/${id}/myfriends`)).then(response => {
-        setFriends(response.data.value || []);
-        })
-        .catch(error => {
-          console.log(error);
-          setFriends([]);
-        });
-    }, [id]);
-
-    return (
-      <>
-        <h4 className="rightbarTitle">User information</h4>
-        <div className="rightbarInfo">
-          <div className="rightbarInfoItem">
-            <span className="rightbarInfoKey">City:</span>
-            <span className="rightbarInfoValue">New York</span>
-          </div>
-          <div className="rightbarInfoItem">
-            <span className="rightbarInfoKey">From:</span>
-            <span className="rightbarInfoValue">Madrid</span>
-          </div>
-          <div className="rightbarInfoItem">
-            <span className="rightbarInfoKey">Relationship:</span>
-            <span className="rightbarInfoValue">Single</span>
-          </div>
-        </div>
-        <h4 className="rightbarTitle">User friends</h4>
-        <div className="rightbarFollowings">
-          
-        {
-  friends.map((f)=>(
-<div className="rightbarFollowing" key={f.id}>
+  return (
+    <aside className="rightbar">
+      <div className="rightbarWrapper">
+        <div className="rightbarAccount igFadeIn">
+          <Link to="/profile">
             <img
-              src={getPublicImageUrl(f.imagePath)}
+              className="igAvatar"
+              width={44}
+              height={44}
+              src={user.image}
               alt=""
-              className="rightbarFollowingImg"
               onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
             />
-            <span className="rightbarFollowingName">{f.name}</span>
+          </Link>
+          <div className="rightbarAccountText">
+            <Link to="/profile" className="rightbarName">{user.username || user.name || "Your account"}</Link>
+            <span className="rightbarSub">{user.name}</span>
           </div>
-  ))
-}
+          <button type="button" className="igLinkButton rightbarSmall" onClick={logout}>Switch</button>
         </div>
 
+        <div className="rightbarHeading">
+          <span>Suggested for you</span>
+          <Link to="/explore" className="rightbarSeeAll">See all</Link>
+        </div>
 
+        <ul className="rightbarSuggestions">
+          {suggestions === null &&
+            [0, 1, 2].map((i) => (
+              <li key={i} className="rightbarSuggestion">
+                <div className="skeleton" style={{ width: 44, height: 44, borderRadius: "50%" }} />
+                <div className="rightbarAccountText">
+                  <div className="skeleton" style={{ width: 110, height: 12, marginBottom: 6 }} />
+                  <div className="skeleton" style={{ width: 70, height: 10 }} />
+                </div>
+              </li>
+            ))}
 
-      </>
-    );
-  };
-  return (
-    <div className="rightbar">
-      <div className="rightbarWrapper">
-        {profile ? <ProfileRightbar /> : <HomeRightbar />}
+          {suggestions?.length === 0 && (
+            <li className="rightbarSub">You're following everyone. 🎉</li>
+          )}
+
+          {suggestions && suggestions.map((candidate, i) => (
+            <li
+              key={candidate.id}
+              className="rightbarSuggestion igFadeUp"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <Link to={`/profile/${candidate.id}`}>
+                <img
+                  className="igAvatar"
+                  width={44}
+                  height={44}
+                  src={getPublicImageUrl(candidate.imagePath)}
+                  alt=""
+                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
+                />
+              </Link>
+              <div className="rightbarAccountText">
+                <Link to={`/profile/${candidate.id}`} className="rightbarName">{candidate.username || candidate.name}</Link>
+                <span className="rightbarSub">{candidate.followsYou ? "Follows you" : "Suggested for you"}</span>
+              </div>
+              <FollowButton
+                user={candidate}
+                isFollowing={candidate.isFollowing}
+                followsYou={candidate.followsYou}
+                variant="link"
+              />
+            </li>
+          ))}
+        </ul>
+
+        <footer className="rightbarFooter">© {new Date().getFullYear()} SocialButterfly</footer>
       </div>
-    </div>
+    </aside>
   );
 }

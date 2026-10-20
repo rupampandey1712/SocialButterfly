@@ -1,79 +1,400 @@
-.profile{
-    display: flex;
-    max-width: 1480px;
-    margin: 0 auto;
-    gap: 20px;
-    padding: 22px;
+.profilePage {
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 30px 20px 40px;
 }
 
-.profileRight{
-    flex: 9;
-    min-width: 0;
+.profileHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: 44px;
 }
 
-.profileCover{
-    height: 320px;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid var(--social-border);
-    border-radius: 22px;
-    background: var(--social-panel);
-    box-shadow: var(--social-shadow);
+.profileAvatarCol {
+  display: flex;
+  flex: 0 0 290px;
+  justify-content: center;
 }
 
-.profileCoverImg{
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    filter: saturate(1.08);
+.profileAvatarButton {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: default;
 }
 
-.profileUserImg{
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    position: absolute;
-    left: 0;
-    right: 0;
-    margin: auto;
-    top: 150px;
-    border: 5px solid white;
-    box-shadow: 0 18px 36px rgba(21, 32, 51, 0.2);
+.profileAvatarButton.hasStory {
+  cursor: pointer;
 }
 
-.profileInfo{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+.profileAvatarButton.hasStory .profileAvatarRing {
+  background-size: 200% 200%;
+  animation: ringSpin 3s linear infinite;
 }
 
-.profileInfoName{
-    color: var(--social-text);
-    font-size: 28px;
-    font-weight: 900;
-    margin: 10px 0 4px;
+.profileAvatarButton.hasStory:hover .profileAvatarRing {
+  transform: scale(1.04);
 }
 
-.profileInfoDesc{
-    color: var(--social-muted);
-    font-weight: 650;
+.profileAvatarRing {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 50%;
 }
 
-.profileRightBottom{
-    display: flex;
-    gap: 20px;
-    margin-top: 22px;
+.profileAvatar {
+  width: 150px;
+  height: 150px;
 }
 
-@media screen and (max-width: 900px) {
-    .profile {
-        display: block;
-        padding: 14px;
-    }
-
-    .profileRightBottom {
-        display: block;
-    }
+.profileAvatarRing .profileAvatar {
+  border-width: 4px;
 }
+
+.profileAvatarSkeleton {
+  width: 156px;
+  height: 156px;
+  border-radius: 50% !important;
+}
+
+.profileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.profileTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.profileTitleRow h1 {
+  margin: 0 12px 0 0;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.profileStatic {
+  cursor: default;
+}
+
+.profileStatic:active {
+  transform: none;
+}
+
+.profileStats {
+  display: flex;
+  gap: 40px;
+  margin: 0 0 20px;
+  padding: 0;
+  font-size: 16px;
+  list-style: none;
+}
+
+.profileStats strong {
+  font-weight: 600;
+}
+
+.profileStats button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.profileStats button:hover {
+  opacity: 0.6;
+}
+
+.profileBio {
+  margin: 0;
+  font-size: 14px;
+  white-space: pre-line;
+}
+
+.profileBioBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.profileFriendsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.profileFriendsLink:hover { opacity: 0.6; }
+
+.profileFollowsYou {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--ig-elevated);
+  color: var(--ig-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.profileMuted {
+  color: var(--ig-muted);
+  font-size: 14px;
+}
+
+.profileTabs {
+  display: flex;
+  justify-content: center;
+  border-top: 1px solid var(--ig-border);
+}
+
+.profileTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  margin-top: -1px;
+  color: var(--ig-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.profileTab.isActive {
+  border-top: 1px solid var(--ig-text);
+  color: var(--ig-text);
+}
+
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.profileTile {
+  position: relative;
+  aspect-ratio: 1;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--ig-elevated);
+  cursor: pointer;
+}
+
+.profileTile img,
+.profileTile video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms var(--ig-ease);
+}
+
+.profileTile:hover img,
+.profileTile:hover video {
+  transform: scale(1.05);
+}
+
+.profileTileText {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  background: var(--ig-gradient);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.profileTileBadge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: #fff;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+}
+
+.profileTileOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.profileTileOverlay span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateY(6px);
+  transition: transform 260ms var(--ig-ease);
+}
+
+.profileTile:hover .profileTileOverlay {
+  opacity: 1;
+}
+
+.profileTile:hover .profileTileOverlay span {
+  transform: none;
+}
+
+.profileEmpty,
+.profileError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.profileEmpty h2,
+.profileError h2 {
+  margin: 16px 0 8px;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.profileEmptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 62px;
+  height: 62px;
+  border: 2px solid var(--ig-text);
+  border-radius: 50%;
+  animation: checkIn 600ms var(--ig-ease-spring) both;
+}
+
+.profileEmptyIcon svg {
+  font-size: 34px;
+}
+
+/* Friends modal */
+.friendsModal {
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+  max-height: 420px;
+}
+
+.friendsModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  height: 44px;
+  border-bottom: 1px solid var(--ig-border-soft);
+}
+
+.friendsModalHeader h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.friendsModalHeader .igIconButton {
+  position: absolute;
+  right: 8px;
+}
+
+.friendsModalBody {
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.friendsModalRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  color: var(--ig-text);
+  font-size: 14px;
+  transition: background 150ms ease;
+}
+
+.friendsModalRow:hover {
+  background: var(--ig-surface-hover);
+}
+
+.friendsModalBody .profileMuted {
+  padding: 24px;
+  text-align: center;
+}
+
+@media (max-width: 735px) {
+  .profilePage { padding: 16px 0 24px; }
+  .profileHeader { align-items: flex-start; margin-bottom: 24px; padding: 0 16px; }
+  .profileAvatarCol { flex: 0 0 auto; margin-right: 24px; }
+  .profileAvatar { width: 77px; height: 77px; }
+  .profileAvatarSkeleton { width: 81px; height: 81px; }
+  .profileTitleRow h1 { width: 100%; margin-bottom: 4px; }
+  .profileStats { gap: 20px; font-size: 14px; }
+  .profileGrid { gap: 2px; }
+  .profileTileOverlay { display: none; }
+  .friendsModal { width: 100%; }
+}
+
+.profileTileMusic {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #4f5bd5, #962fbf 55%, #d62976);
+  color: #fff;
+  text-align: center;
+}
+
+.profileTileMusic strong {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profileTileMusic small { opacity: 0.85; }
+
+.profileTileVinyl {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54%;
+  max-width: 120px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 14%, #111 15% 100%);
+  color: #962fbf;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  transition: transform 600ms var(--ig-ease);
+}
+
+.profileTileVinyl svg { display: none; }
+.profileTile:hover .profileTileVinyl { transform: rotate(180deg); }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SocialMediaWeb.Services.Classes;
 using SocialMediaWeb.Services.Interfaces;
 
 namespace SocialMediaWeb.Controllers
@@ -17,11 +18,11 @@ namespace SocialMediaWeb.Controllers
 
 
         [HttpPost]
-        public async  Task<IActionResult> LikePost([FromQuery]int postId, [FromQuery] int userId)
+        public async  Task<IActionResult> LikePost([FromQuery]int postId)
         {
             try
             {
-                var like = await _like.LikeCountAsync(postId, userId);
+                var like = await _like.LikeCountAsync(postId, User.RequireUserId());
                 return Ok(like);
 
             }
@@ -29,6 +30,13 @@ namespace SocialMediaWeb.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("toggle")]
+        public async Task<IActionResult> ToggleLike([FromQuery] int postId)
+        {
+            var result = await _like.ToggleLikeAsync(postId, User.RequireUserId());
+            return result == null ? NotFound("A valid user and post are required.") : Ok(result);
         }
     }
 }

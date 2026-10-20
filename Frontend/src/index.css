@@ -5,17 +5,70 @@
 @tailwind utilities;
 
 :root {
-  --social-bg: #eef4fb;
-  --social-panel: rgba(255, 255, 255, 0.94);
+  --social-bg: #fafafa;
+  --social-panel: rgba(255, 255, 255, 0.96);
   --social-panel-strong: #ffffff;
-  --social-border: #dde8f3;
-  --social-text: #152033;
-  --social-muted: #65758b;
-  --social-primary: #2563eb;
-  --social-primary-dark: #1d4ed8;
-  --social-accent: #14b8a6;
-  --social-danger: #ef4444;
-  --social-shadow: 0 18px 45px rgba(21, 32, 51, 0.1);
+  --social-border: #dbdbdb;
+  --social-text: #262626;
+  --social-muted: #737373;
+  --social-primary: #0095f6;
+  --social-primary-dark: #1877f2;
+  --social-accent: #d62976;
+  --social-danger: #ed4956;
+  --social-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+
+  --ig-bg: #fafafa;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #f2f2f2;
+  --ig-border: #dbdbdb;
+  --ig-border-soft: #efefef;
+  --ig-text: #262626;
+  --ig-muted: #737373;
+  --ig-blue: #0095f6;
+  --ig-blue-hover: #1877f2;
+  --ig-red: #ff3040;
+  --ig-gradient: linear-gradient(45deg, #feda75 0%, #fa7e1e 25%, #d62976 50%, #962fbf 75%, #4f5bd5 100%);
+  --ig-nav-width: 245px;
+  --ig-nav-collapsed: 72px;
+  --ig-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ig-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ig-elevated: #efefef;
+  --ig-elevated-hover: #dbdbdb;
+  --ig-skeleton-base: #efefef;
+  --ig-skeleton-shine: #f8f8f8;
+  --ig-unread: #f0f7ff;
+  --ig-input-bg: #fafafa;
+  --ig-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.15);
+  color-scheme: light;
+}
+
+/* Instagram-style dark mode, set by utils/theme.js via <html data-theme="dark">. */
+:root[data-theme="dark"] {
+  --ig-bg: #000000;
+  --ig-surface: #000000;
+  --ig-surface-hover: #1a1a1a;
+  --ig-border: #363636;
+  --ig-border-soft: #262626;
+  --ig-text: #f5f5f5;
+  --ig-muted: #a8a8a8;
+  --ig-elevated: #262626;
+  --ig-elevated-hover: #363636;
+  --ig-skeleton-base: #1c1c1c;
+  --ig-skeleton-shine: #2a2a2a;
+  --ig-unread: #0b1f33;
+  --ig-input-bg: #121212;
+  --ig-shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --social-bg: #000000;
+  --social-panel: #121212;
+  --social-panel-strong: #121212;
+  --social-border: #262626;
+  --social-text: #f5f5f5;
+  --social-muted: #a8a8a8;
+  color-scheme: dark;
+}
+
+body {
+  transition: background-color 300ms ease, color 300ms ease;
 }
 
 * {
@@ -24,22 +77,42 @@
 
 body {
   margin: 0;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.14), transparent 28rem),
-    radial-gradient(circle at 88% 8%, rgba(20, 184, 166, 0.12), transparent 26rem),
-    linear-gradient(180deg, #f8fbff 0%, var(--social-bg) 100%);
-  color: var(--social-text);
-  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  background: var(--ig-bg);
+  color: var(--ig-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The Instagram-style nav (Topbar) is fixed; it tags <body> so every page gets the offset. */
+body.hasAppNav {
+  padding-left: var(--ig-nav-width);
+}
+
+@media (max-width: 1263px) {
+  body.hasAppNav { padding-left: var(--ig-nav-collapsed); }
+}
+
+@media (max-width: 767px) {
+  body.hasAppNav {
+    padding-left: 0;
+    padding-top: 60px;
+    padding-bottom: 56px;
+  }
 }
 
 a {
+  color: inherit;
   text-decoration: none;
+}
+
+button {
+  font-family: inherit;
 }
 
 .modal-content {
   border: 1px solid var(--social-border);
   border-radius: 18px;
-  box-shadow: 0 26px 70px rgba(21, 32, 51, 0.22);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.2);
 }
 
 .modal-header,
@@ -47,15 +120,190 @@ a {
   border-color: var(--social-border);
 }
 
-.btn-primary,
-.shareButton {
+.btn-primary {
   border: 0;
-  background: linear-gradient(135deg, var(--social-primary), var(--social-accent));
-  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.22);
+  background: var(--ig-blue);
 }
 
-.btn-primary:hover,
-.shareButton:hover {
-  background: linear-gradient(135deg, var(--social-primary-dark), #0f766e);
+.btn-primary:hover {
+  background: var(--ig-blue-hover);
 }
 
+/* ---------- Shared building blocks ---------- */
+
+.igButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ig-blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, transform 120ms ease, opacity 160ms ease;
+}
+
+.igButton:hover { background: var(--ig-blue-hover); }
+.igButton:active { transform: scale(0.96); }
+.igButton:disabled { opacity: 0.55; cursor: default; transform: none; }
+
+.igButton.secondary {
+  background: var(--ig-elevated);
+  color: var(--ig-text);
+}
+
+.igButton.secondary:hover { background: var(--ig-elevated-hover); }
+
+.igLinkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-blue);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 160ms ease;
+}
+
+.igLinkButton:hover { color: #00376b; }
+.igLinkButton:disabled { opacity: 0.4; cursor: default; }
+
+.igIconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  cursor: pointer;
+  transition: transform 140ms ease, opacity 140ms ease;
+}
+
+.igIconButton:hover { opacity: 0.55; }
+.igIconButton:active { transform: scale(0.88); }
+
+.igAvatar {
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--ig-elevated);
+}
+
+/* Gradient story ring around an avatar. */
+.igRing {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+  transition: transform 220ms var(--ig-ease-spring);
+}
+
+.igRing > .igAvatar {
+  border: 2px solid var(--ig-surface);
+}
+
+.igRing:hover { transform: scale(1.05); }
+
+/* ---------- Animations ---------- */
+
+/*
+ * Route transition. Only page content animates: a transform on an ancestor of the
+ * fixed nav would make it the nav's containing block and drag the nav along.
+ */
+.pageTransition > :not(.appNav, .mobileTopbar, .mobileTabbar, .navPanel):not(:has(.appNav)),
+.pageTransition > :has(> .appNav) > :not(.appNav, .mobileTopbar, .mobileTabbar, .navPanel) {
+  animation: pageIn 360ms var(--ig-ease) both;
+}
+
+.igFadeUp {
+  animation: fadeUp 420ms var(--ig-ease) both;
+}
+
+.igFadeIn {
+  animation: fadeIn 260ms ease both;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes checkIn {
+  from { opacity: 0; transform: scale(0.4) rotate(-20deg); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ringSpin {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes previewIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  25% { transform: scale(0.8); }
+  55% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sheetIn {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to { background-position: 400px 0; }
+}
+
+.skeleton {
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--ig-skeleton-base) 0px, var(--ig-skeleton-shine) 120px, var(--ig-skeleton-base) 240px);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+
+.igSpinner {
+  width: 28px;
+  height: 28px;
+  margin: 24px auto;
+  border: 3px solid var(--ig-elevated);
+  border-top-color: var(--ig-muted);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

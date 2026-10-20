@@ -22,9 +22,7 @@ namespace SocialMediaWeb.Services.Classes
             var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
             await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
 
-            var fileName = Path.GetFileNameWithoutExtension(file.FileName);
-            var extension = Path.GetExtension(file.FileName);
-            var blobName = $"{fileName}_{DateTime.UtcNow.Ticks}{extension}";
+            var blobName = SafeBlobName(file.FileName);
 
             var blobClient = containerClient.GetBlobClient(blobName);
 
@@ -33,11 +31,34 @@ namespace SocialMediaWeb.Services.Classes
             {
                 HttpHeaders = new BlobHttpHeaders
                 {
-                    ContentType = file.ContentType
+                    // Derived from the (already validated) extension, never trusted from the client,
+                    // so an upload can't be served as HTML/SVG/script.
+                    ContentType = ContentTypeFor(blobName),
+                    CacheControl = "public, max-age=31536000, immutable"
                 }
             });
 
             _logger.LogInformation("Uploaded blob '{BlobName}' to container '{Container}'", blobName, containerName);
+            return ToPublicUrl(blobClient.Uri);
+        }
+
+        public async Task<string> UploadBytesAsync(byte[] content, string fileName, string containerName)
+        {
+            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync(PublicAccessType.Blob);
+
+            var blobName = SafeBlobName(fileName);
+            var blobClient = containerClient.GetBlobClient(blobName);
+            await blobClient.UploadAsync(new BinaryData(content), new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
+                {
+                    ContentType = ContentTypeFor(blobName),
+                    CacheControl = "public, max-age=31536000, immutable"
+                }
+            });
+
+            _logger.LogInformation("Uploaded generated blob '{BlobName}' to container '{Container}'", blobName, containerName);
             return ToPublicUrl(blobClient.Uri);
         }
 
@@ -105,6 +126,33 @@ namespace SocialMediaWeb.Services.Classes
 
             return blobUri.ToString();
         }
+
+        private static readonly Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider ContentTypes = new();
+
+        /// <summary>
+        /// Random, collision-free blob name that keeps a short, sanitized hint of the original
+        /// file name. Client file names can contain path separators, control or Unicode tricks.
+        /// </summary>
+        public static string SafeBlobName(string? originalFileName)
+        {
+            var name = Path.GetFileName(originalFileName ?? string.Empty);
+            var extension = Path.GetExtension(name).ToLowerInvariant();
+            if (extension.Length > 6 || !extension.Skip(1).All(char.IsAsciiLetterOrDigit))
+            {
+                extension = string.Empty;
+            }
+
+            var stem = new string(Path.GetFileNameWithoutExtension(name)
+                .Select(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' ? c : '_')
+                .ToArray()).Trim('_');
+            if (stem.Length > 40) stem = stem[..40];
+            if (stem.Length == 0) stem = "file";
+
+            return $"{stem}_{Guid.NewGuid():N}{extension}";
+        }
+
+        public static string ContentTypeFor(string blobName) =>
+            ContentTypes.TryGetContentType(blobName, out var type) ? type : "application/octet-stream";
 
         private static string ExtractBlobName(string blobUrl)
         {

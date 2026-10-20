@@ -1,0 +1,8 @@
+# Local runtime data
+socialmedia.db
+media/
+
+# Python tooling
+.venv/
+__pycache__/
+.pytest_cache/

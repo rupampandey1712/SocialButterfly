@@ -1,142 +1,153 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { CheckCircleOutlineRounded } from "@mui/icons-material";
+import PostCard from "./PostCard";
+import { fetchFeed, POST_CREATED_EVENT } from "../../utils/posts";
+import { getCurrentUser } from "../../utils/session";
 import "./post.css";
-import { MoreVert } from "@mui/icons-material";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import CommentsModal from "../../pages/comments/CommentsModal";
-import { getPublicImageUrl, DEFAULT_AVATAR } from "../../utils/image";
- 
+
+const pageSize = 8;
+
+export function PostSkeleton() {
+  return (
+    <div className="postCard postSkeleton" aria-hidden="true">
+      <div className="postHeader">
+        <div className="skeleton" />
+        <div className="skeleton" style={{ width: 140, height: 12 }} />
+      </div>
+      <div className="skeleton postSkeletonMedia" />
+      <div className="skeleton" style={{ width: 90, height: 12, margin: "14px 4px 8px" }} />
+      <div className="skeleton" style={{ width: "70%", height: 12, margin: "0 4px" }} />
+    </div>
+  );
+}
+
 export default function AllPost() {
-  const [showCommentModal, setShowCommentModal] = useState(false);
-  const [currentPostId, setCurrentPostId] = useState(null);
-  const id = sessionStorage.getItem("Id");
-  const [data, setData] = useState([]);
+  const { id: viewerId } = getCurrentUser();
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState(false);
+  const sentinelRef = useRef(null);
+  const loadingRef = useRef(false);
+  const postCountRef = useRef(0);
+  postCountRef.current = posts.length;
+
+  const loadMore = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setIsLoading(true);
+    try {
+      const page = await fetchFeed(viewerId, postCountRef.current, pageSize);
+      setPosts((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        return [...prev, ...page.filter((p) => !seen.has(p.id))];
+      });
+      setHasMore(page.length === pageSize);
+      setError(false);
+    } catch {
+      setError(true);
+    } finally {
+      loadingRef.current = false;
+      setIsLoading(false);
+    }
+  }, [viewerId]);
 
   useEffect(() => {
-    axios
-      .get(`https://localhost:7151/api/Post/UserPost`)
-      .then((response) => {
-        setData(response.data || []);
-      })
-      .catch((error) => {
-        console.error("Error fetching posts:", error);
-        setData([]);
-      });
-  }, [id]);
+    loadMore();
+  }, [loadMore]);
 
-  const likeHandler = async (postId, initialLikeCount, initialIsLiked) => {
-    try {
-      const response = await axios.post(
-        `https://localhost:7151/api/Likes?postId=${postId}&userId=${id}`
-      );
-      const updatedLikeCount = response.data;
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === postId
-            ? {
-                ...item,
-                likeCount: updatedLikeCount,
-                isLiked: !initialIsLiked,
-              }
-            : item
-        )
-      );
-    } catch (error) {
-      console.error("Error liking post:", error);
-    }
-  };
+  // Infinite scroll: load the next page as the sentinel approaches the viewport.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore || error) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => entries[0].isIntersecting && loadMore(),
+      { rootMargin: "600px 0px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, error, loadMore, posts.length]);
 
-  const handleCommentButtonClick = (postId) => {
-    setCurrentPostId(postId);
-    setShowCommentModal(true);
-  };
+  // A post created from the nav's Create modal appears at the top immediately.
+  useEffect(() => {
+    const onCreated = (event) => {
+      const created = event.detail;
+      if (!created?.id) return;
+      const { id, name, image } = getCurrentUser();
+      setPosts((prev) => [
+        {
+          id: created.id,
+          imagePath: created.imagePath,
+          description: created.descriprion,
+          createdAt: created.createdAt || new Date().toISOString(),
+          user: { id, name, imagePath: image },
+          likeCount: 0,
+          commentCount: 0,
+          isLiked: false,
+        },
+        ...prev,
+      ]);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+    window.addEventListener(POST_CREATED_EVENT, onCreated);
+    return () => window.removeEventListener(POST_CREATED_EVENT, onCreated);
+  }, []);
 
-  const handleCloseCommentModal = () => {
-    setShowCommentModal(false);
-    setCurrentPostId(null);
-  };
+  const updatePost = useCallback((updated) => {
+    setPosts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  }, []);
+
+  const removePost = useCallback((postId) => {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }, []);
+
+  if (!isLoading && !error && posts.length === 0) {
+    return (
+      <div className="feedEmpty igFadeUp">
+        <div className="feedEmptyIcon">
+          <CheckCircleOutlineRounded />
+        </div>
+        <h3>No posts yet</h3>
+        <p>When people share photos and videos, they'll appear here. Tap Create to share the first one.</p>
+      </div>
+    );
+  }
 
   return (
     <>
-      {data.length === 0 && (
-        <div className="post emptyFeed">
-          <div className="postWrapper">
-            <div className="emptyFeedIcon">SB</div>
-            <h3>No posts yet</h3>
-            <p>Once your community starts sharing, posts will appear here in a clean, organized feed.</p>
-          </div>
+      {posts.map((post, index) => (
+        <PostCard
+          key={post.id}
+          post={post}
+          index={index % pageSize}
+          onUpdate={updatePost}
+          onDelete={removePost}
+        />
+      ))}
+
+      {isLoading && (
+        <>
+          <PostSkeleton />
+          {posts.length === 0 && <PostSkeleton />}
+        </>
+      )}
+
+      {error && (
+        <div className="feedEnd">
+          <p>Couldn't load posts.</p>
+          <button type="button" className="igButton" onClick={loadMore}>Retry</button>
         </div>
       )}
-      {data.map((post) => (
-        <div className="post" key={post.id}>
-          <div className="postWrapper">
-            <div className="postTop">
-              <div className="postTopLeft">
-                <img
-                  className="postProfileImg"
-                  src={getPublicImageUrl(post.user?.imagePath)}
-                  alt=""
-                  onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
-                />
-                <span className="postUsername">{post.user?.name || "User"}</span>
-                <span className="postDate">
-                  {post.createdAt ? new Date(post.createdAt).toLocaleDateString() : ""}
-                </span>
-              </div>
-              <div className="postTopRight">
-                <MoreVert />
-              </div>
-            </div>
-            <div className="postCenter">
-              <span className="postText">{post.descriprion}</span>
-              {post.imagePath &&
-              (post.imagePath.endsWith(".jpg") ||
-                post.imagePath.endsWith(".png") ||
-                post.imagePath.endsWith(".jpeg")) ? (
-                <img className="postImg" src={getPublicImageUrl(post.imagePath)} alt="" />
-              ) : post.imagePath &&
-                (post.imagePath.endsWith(".mp4") || post.imagePath.endsWith(".mov")) ? (
-                <video className="postImg" controls>
-                  <source src={getPublicImageUrl(post.imagePath)} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : post.imagePath &&
-                (post.imagePath.endsWith(".mp3") || post.imagePath.endsWith(".wav")) ? (
-                <audio className="postImg" controls>
-                  <source src={getPublicImageUrl(post.imagePath)} type="audio/mpeg" />
-                  Your browser does not support the audio tag.
-                </audio>
-              ) : null}
-            </div>
-            <div className="postBottom">
-              <div className="postBottomLeft">
-                <span
-                  className="likeIcon"
-                  style={{ color: post.isLiked ? "red" : "gray", cursor: "pointer" }}
-                  onClick={() => likeHandler(post.id, post.likeCount, post.isLiked)}
-                >
-                  &#10084;
-                </span>
-                <span className="postLikeCounter">{post.likeCount} people like it</span>
-              </div>
-              <div className="postBottomRight">
-                <button
-                  className="btn btn-dark"
-                  onClick={() => handleCommentButtonClick(post.id)}
-                >
-                  comments
-                </button>
-              </div>
-            </div>
-          </div>
-          {showCommentModal && currentPostId === post.id && (
-            <CommentsModal
-              show={showCommentModal}
-              postId={currentPostId}
-              onClose={handleCloseCommentModal}
-            />
-          )}
+
+      {!hasMore && posts.length > 0 && (
+        <div className="feedEnd igFadeIn">
+          <div className="feedEndCheck"><CheckCircleOutlineRounded /></div>
+          <h4>You're all caught up</h4>
+          <p>You've seen all new posts.</p>
         </div>
-      ))}
+      )}
+
+      <div ref={sentinelRef} aria-hidden="true" />
     </>
   );
 }

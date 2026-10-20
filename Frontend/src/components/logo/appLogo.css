@@ -12,9 +12,48 @@
   place-items: center;
   border-radius: 1rem;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.86), transparent 0.72rem),
-    linear-gradient(135deg, #2563eb 0%, #14b8a6 58%, #8b5cf6 100%);
-  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.25);
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.6), transparent 0.72rem),
+    var(--ig-gradient, linear-gradient(135deg, #2563eb 0%, #14b8a6 58%, #8b5cf6 100%));
+  box-shadow: 0 10px 22px rgba(214, 41, 118, 0.22);
+  transition: transform 300ms var(--ig-ease-spring, ease);
+}
+
+.appLogo:hover .appLogoMark {
+  transform: rotate(-8deg) scale(1.06);
+}
+
+/* Wings flap on hover. */
+.appLogoMark .wing {
+  transform-box: fill-box;
+  transition: transform 200ms ease;
+}
+
+.appLogoMark .wingLeft,
+.appLogoMark .wingLeftLower {
+  transform-origin: right center;
+}
+
+.appLogoMark .wingRight,
+.appLogoMark .wingRightLower {
+  transform-origin: left center;
+}
+
+.appLogo:hover .wingLeft,
+.appLogo:hover .wingLeftLower {
+  animation: flapLeft 600ms ease-in-out 2;
+}
+
+.appLogo:hover .wingRight,
+.appLogo:hover .wingRightLower {
+  animation: flapRight 600ms ease-in-out 2;
+}
+
+@keyframes flapLeft {
+  50% { transform: scaleX(0.55); }
+}
+
+@keyframes flapRight {
+  50% { transform: scaleX(0.55); }
 }
 
 .appLogoMark svg {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialMediaWeb.Dtos;
 using SocialMediaWeb.Models;
+using SocialMediaWeb.Services.Classes;
 using SocialMediaWeb.Services.Interfaces;
 
 namespace SocialMediaWeb.Controllers
@@ -19,18 +20,27 @@ namespace SocialMediaWeb.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Comment>> AddCommentToPost(CreateCommentDto commentDto)
-        {
-            var comment = await _service.CreateCommentAsync(commentDto);
-            return Ok(comment);
-        }
-
-        [HttpGet("{postId}")]
-        public async Task<ActionResult<FriendDto>> MyFriends(int postId)
+        public async Task<ActionResult<CommentResponseDto>> AddCommentToPost(CreateCommentDto commentDto)
         {
             try
             {
-                var comments = await _service.GetCommentAsync(postId);
+                // The author is whoever holds the token, not the userId in the body.
+                commentDto.UserId = User.RequireUserId();
+                var comment = await _service.AddCommentAsync(commentDto);
+                return Ok(comment);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("{postId}")]
+        public async Task<ActionResult<IEnumerable<CommentResponseDto>>> PostComments(int postId)
+        {
+            try
+            {
+                var comments = await _service.GetPostCommentsAsync(postId);
                 return Ok(comments);
 
             }

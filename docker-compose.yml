@@ -20,13 +20,25 @@ services:
       - "10001:10001"
       - "10002:10002"
     volumes:
-      - azurite-data:/data
+      # Blob/queue/table data lives inside the project folder (git-ignored), not in a Docker volume.
+      - ./storage/azurite:/data
+
+  # The Service Bus emulator keeps its own state in a dedicated, throwaway SQL instance.
+  # Sharing the app's SQL volume left orphaned emulator files behind after restarts,
+  # which crash-looped the emulator ("Cannot create file ... because it already exists").
+  servicebus-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Change_this_password_123!}
 
   servicebus:
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
     restart: unless-stopped
     environment:
-      SQL_SERVER: sqlserver
+      SQL_SERVER: servicebus-sql
       MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Change_this_password_123!}
       ACCEPT_EULA: "Y"
       EMULATOR_HTTP_PORT: 5300
@@ -37,7 +49,7 @@ services:
     volumes:
       - ./infra/servicebus/config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
     depends_on:
-      - sqlserver
+      - servicebus-sql
 
   app:
     image: ${SOCIALMEDIA_IMAGE:-ramp1712/socialmediaweb:latest}
@@ -59,6 +71,10 @@ services:
       JWT__TokenValidityInMinutes: ${JWT_TOKEN_VALIDITY_IN_MINUTES:-60}
       JWT__RefreshTokenValidityInDays: ${JWT_REFRESH_TOKEN_VALIDITY_IN_DAYS:-7}
       GenAI__GrpcAddress: ${GENAI_GRPC_ADDRESS:-http://genai:50051}
+      # Admin accounts are provisioned here, never via public sign-up.
+      Admin__Email: ${ADMIN_EMAIL:-}
+      Admin__Password: ${ADMIN_PASSWORD:-}
+      Comfy__BaseUrl: ${COMFY_BASE_URL:-http://host.docker.internal:8188}
     ports:
       - "8080:8080"
     depends_on:
@@ -76,10 +92,18 @@ services:
     restart: unless-stopped
     environment:
       FUNCTIONS_WORKER_RUNTIME: dotnet-isolated
-      AzureWebJobsStorage: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFeqCnf2lRcuQYhQv4o9VpxYlRvxK5Y6uR4oTHC9S0N2S/0EDYw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
+      AzureWebJobsStorage: DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;
       ConnectionStrings__Con: Server=sqlserver,1433;Database=SocialMedia;User Id=sa;Password=${MSSQL_SA_PASSWORD:-Change_this_password_123!};TrustServerCertificate=True;Encrypt=False;
       ServiceBusConnection: Endpoint=sb://servicebus;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;
       ChatQueueName: chat-messages
+      PostNotificationsQueueName: post-notifications
+      FriendRequestsQueueName: friend-requests
+      VerificationQueueName: verification-codes
+      ImageGenerationQueueName: image-generation
+      # ComfyUI runs on the Windows host (D:\ComfyUI-data\start-comfyui.bat).
+      Comfy__BaseUrl: ${COMFY_BASE_URL:-http://host.docker.internal:8188}
+      # Show function logs (including locally "sent" verification codes) in `docker compose logs`.
+      AzureFunctionsJobHost__logging__console__isEnabled: "true"
       DurableTaskHubName: chatdelivery
     depends_on:
       - sqlserver
@@ -105,4 +129,3 @@ volumes:
   sqlserver-data:
   app-images:
   app-posts:
-  azurite-data:

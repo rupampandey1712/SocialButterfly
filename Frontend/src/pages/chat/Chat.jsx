@@ -23,7 +23,7 @@ export default function Chat() {
   const [searchParams] = useSearchParams();
   const queryUserId = searchParams.get("userId");
   const currentUserId = Number(sessionStorage.getItem("Id"));
-  const token = sessionStorage.getItem("tokens");
+  // Auth travels in the HttpOnly session cookie; no token is visible to page scripts.
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -33,9 +33,7 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const authConfig = useMemo(() => ({
-    headers: { Authorization: `Bearer ${token}` },
-  }), [token]);
+  const authConfig = useMemo(() => ({}), []);
 
   useEffect(() => {
     if (!Number.isInteger(currentUserId) || currentUserId <= 0) {

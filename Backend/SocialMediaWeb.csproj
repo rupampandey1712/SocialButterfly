@@ -45,6 +45,12 @@
     <Protobuf Include="Protos\genai.proto" GrpcServices="Client" />
   </ItemGroup>
 
+  <!-- Default ComfyUI workflow (API format), embedded so the API and Functions images both carry it. -->
+  <ItemGroup>
+    <Content Remove="ComfyUI\**" />
+    <EmbeddedResource Include="ComfyUI\flux-schnell-txt2img.json" LogicalName="SocialMediaWeb.ComfyUI.flux-schnell-txt2img.json" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Remove="tests\**\*.cs" />
     <Content Remove="tests\**\*" />

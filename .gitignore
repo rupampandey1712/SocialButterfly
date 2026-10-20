@@ -1,0 +1,8 @@
+# Local secrets
+.env
+
+# Azurite blob/queue/table data (uploaded media) kept in the project folder for local dev
+storage/
+
+# Local-only notes (test credentials)
+TEST_ACCOUNTS.local.md

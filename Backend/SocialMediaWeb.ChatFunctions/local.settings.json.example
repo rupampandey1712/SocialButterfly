@@ -5,6 +5,11 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
     "ServiceBusConnection": "Endpoint=sb://localhost;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;",
     "ChatQueueName": "chat-messages",
+    "PostNotificationsQueueName": "post-notifications",
+    "FriendRequestsQueueName": "friend-requests",
+    "VerificationQueueName": "verification-codes",
+    "ImageGenerationQueueName": "image-generation",
+    "Comfy__BaseUrl": "http://127.0.0.1:8188",
     "DurableTaskHubName": "chatdelivery"
   },
   "ConnectionStrings": {

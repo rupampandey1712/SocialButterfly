@@ -1,0 +1,879 @@
+/* ---------- Page + animated background ---------- */
+
+.authPage {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--ig-bg);
+  color: var(--ig-text);
+}
+
+.authAurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.auroraBlob {
+  position: absolute;
+  width: 46vw;
+  height: 46vw;
+  max-width: 640px;
+  max-height: 640px;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  animation: auroraDrift 18s ease-in-out infinite alternate;
+}
+
+.blobOne { top: -12%; left: -8%; background: #fa7e1e; }
+.blobTwo { right: -10%; bottom: -18%; background: #962fbf; animation-duration: 22s; animation-delay: -6s; }
+.blobThree { top: 30%; left: 40%; background: #d62976; opacity: 0.22; animation-duration: 26s; animation-delay: -12s; }
+
+:root[data-theme="dark"] .auroraBlob { opacity: 0.18; }
+
+@keyframes auroraDrift {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vw, 4vh) scale(1.12); }
+  100% { transform: translate(-4vw, 8vh) scale(0.95); }
+}
+
+.authMain {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  padding: 32px 16px;
+}
+
+/* ---------- Phone showcase ---------- */
+
+.authShowcase {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 380px;
+  height: 600px;
+  animation: showcaseIn 900ms var(--ig-ease) both;
+}
+
+@keyframes showcaseIn {
+  from { opacity: 0; transform: translateX(-40px) rotate(-4deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.authPhone {
+  position: relative;
+  width: 270px;
+  height: 560px;
+  padding: 12px;
+  border-radius: 44px;
+  background: linear-gradient(145deg, #1f1f1f, #050505);
+  box-shadow:
+    0 0 0 2px #2a2a2a,
+    0 40px 80px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transform: rotate(-4deg);
+  animation: phoneFloat 6s ease-in-out infinite;
+}
+
+@keyframes phoneFloat {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(-2deg) translateY(-12px); }
+}
+
+.authPhoneNotch {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  z-index: 3;
+  width: 90px;
+  height: 22px;
+  border-radius: 12px;
+  background: #050505;
+  transform: translateX(-50%);
+}
+
+.authPhoneScreen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 34px;
+  background: #111;
+}
+
+.authSlide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.12);
+  transition: opacity 1.2s ease, transform 4.5s ease-out;
+}
+
+.authSlide.isActive {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.authPhoneHeader {
+  position: absolute;
+  top: 52px;
+  left: 16px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authPhoneAvatar {
+  width: 30px;
+  height: 30px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+}
+
+.authPhoneLine {
+  width: 80px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.authBubble {
+  position: absolute;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: var(--ig-surface);
+  color: var(--ig-text);
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+  animation: bubbleFloat 5.5s ease-in-out infinite;
+}
+
+.authBubble svg { font-size: 20px; }
+.bubbleLike { top: 90px; right: 0; }
+.bubbleLike svg { color: var(--ig-red); }
+.bubbleComment { bottom: 140px; left: 0; }
+.bubbleComment svg { color: var(--ig-blue); }
+.bubbleFollow { bottom: 50px; right: 20px; }
+.bubbleFollow svg { color: #962fbf; }
+
+@keyframes bubbleFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-14px) scale(1.04); }
+}
+
+/* ---------- Form column ---------- */
+
+.authColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 360px;
+  max-width: 100%;
+  animation: columnIn 700ms var(--ig-ease) 120ms both;
+}
+
+@keyframes columnIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+
+.authCard {
+  border: 1px solid var(--ig-border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--ig-surface) 88%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.authCardMain {
+  padding: 36px 36px 24px;
+}
+
+.authCardFooter {
+  padding: 20px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.authBrand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.authBrand .appLogoName {
+  font-size: 1.5rem;
+}
+
+.authTitle {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.authSubtitle {
+  margin: 0 0 20px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.authForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Each step / mode slides in. */
+.authStep {
+  animation: stepIn 420ms var(--ig-ease) both;
+}
+
+.authStep.isBack {
+  animation-name: stepInBack;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(28px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes stepInBack {
+  from { opacity: 0; transform: translateX(-28px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- Floating-label field ---------- */
+
+.authField {
+  position: relative;
+}
+
+.authField label {
+  position: relative;
+  display: block;
+  height: 42px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--ig-border);
+  border-radius: 6px;
+  background: var(--ig-input-bg);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  cursor: text;
+}
+
+.authField.isFocused label {
+  border-color: var(--ig-muted);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 14%, transparent);
+}
+
+.authField.is-invalid label {
+  border-color: var(--social-danger);
+}
+
+.authFieldLabel {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  right: 70px;
+  overflow: hidden;
+  color: var(--ig-muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  transform-origin: left center;
+  transition: transform 160ms var(--ig-ease), top 160ms var(--ig-ease);
+  pointer-events: none;
+}
+
+.authField.isRaised .authFieldLabel {
+  top: 11px;
+  transform: translateY(-50%) scale(0.8);
+}
+
+.authField input {
+  width: 100%;
+  height: 100%;
+  padding: 9px 76px 7px 10px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ig-text);
+  font-size: 13px;
+}
+
+.authField.isRaised input {
+  padding-top: 18px;
+  padding-bottom: 2px;
+  font-size: 12px;
+}
+
+.authField input[type="date"] {
+  color-scheme: inherit;
+}
+
+.authFieldAdornments {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 42px;
+}
+
+.authFieldOk,
+.authFieldBad {
+  font-size: 22px !important;
+  animation: adornPop 320ms var(--ig-ease-spring);
+}
+
+.authFieldOk { color: #2ecc71; }
+.authFieldBad { color: var(--social-danger); }
+
+@keyframes adornPop {
+  from { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.authFieldSpinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ig-elevated);
+  border-top-color: var(--ig-muted);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.authFieldHint {
+  margin: 4px 2px 2px;
+  color: var(--ig-muted);
+  font-size: 12px;
+  animation: fadeIn 200ms ease both;
+}
+
+.authFieldHint.isError {
+  color: var(--social-danger);
+}
+
+.authShowPassword {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- Buttons, divider, links ---------- */
+
+.authPrimary {
+  position: relative;
+  width: 100%;
+  min-height: 34px;
+  margin-top: 8px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ig-blue);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease, opacity 160ms ease, transform 120ms ease;
+}
+
+.authPrimary:hover:not(:disabled) { background: var(--ig-blue-hover); }
+.authPrimary:active:not(:disabled) { transform: scale(0.98); }
+.authPrimary:disabled { opacity: 0.45; cursor: default; }
+
+.authPrimary.isLoading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.authPrimary.isLoading span { visibility: hidden; }
+
+.authDivider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 18px 0;
+  color: var(--ig-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.authDivider::before,
+.authDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--ig-border);
+}
+
+.authAlt {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ig-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.authAlt:hover { background: var(--ig-surface-hover); }
+.authAlt svg { color: #962fbf; }
+
+.authLinkRow {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.authLink {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.authLink:hover { text-decoration: underline; }
+
+.authCardFooter a,
+.authCardFooter button {
+  color: var(--ig-blue);
+  font-weight: 600;
+}
+
+.authLegal {
+  margin: 8px 0 0;
+  color: var(--ig-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.authError {
+  margin: 12px 0 0;
+  color: var(--social-danger);
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
+  animation: shake 420ms ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.authBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- Segmented Mobile / Email switch ---------- */
+
+.authSegment {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 14px;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--ig-elevated);
+}
+
+.authSegment button {
+  position: relative;
+  z-index: 1;
+  padding: 7px 0;
+  border: 0;
+  background: none;
+  color: var(--ig-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.authSegment button.isActive { color: var(--ig-text); }
+
+.authSegmentPill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  border-radius: 8px;
+  background: var(--ig-surface);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 300ms var(--ig-ease-spring);
+}
+
+.authSegment.isRight .authSegmentPill {
+  transform: translateX(100%);
+}
+
+/* ---------- Password strength ---------- */
+
+.passwordMeter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2px 2px 4px;
+  animation: fadeIn 200ms ease both;
+}
+
+.passwordMeterBars {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.passwordMeterBars span {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ig-elevated);
+  transition: background 300ms ease, transform 300ms var(--ig-ease-spring);
+}
+
+.passwordMeterBars span.isOn { transform: scaleY(1.4); }
+.score1 .isOn { background: #ed4956; }
+.score2 .isOn { background: #f5a623; }
+.score3 .isOn { background: #58c322; }
+.score4 .isOn { background: #2ecc71; }
+
+.passwordMeterLabel {
+  min-width: 56px;
+  color: var(--ig-muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* ---------- OTP ---------- */
+
+.otpInput {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin: 8px 0 4px;
+}
+
+.otpInput input {
+  width: 100%;
+  height: 52px;
+  border: 1px solid var(--ig-border);
+  border-radius: 10px;
+  outline: 0;
+  background: var(--ig-input-bg);
+  color: var(--ig-text);
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  caret-color: var(--ig-blue);
+  transition: border-color 160ms ease, transform 200ms var(--ig-ease-spring), box-shadow 160ms ease;
+  animation: otpIn 380ms var(--ig-ease-spring) both;
+}
+
+.otpInput input:focus {
+  border-color: var(--ig-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 18%, transparent);
+  transform: translateY(-2px);
+}
+
+.otpInput input.isFilled {
+  border-color: var(--ig-text);
+  animation: otpFill 260ms var(--ig-ease-spring);
+}
+
+.otpInput.hasError input {
+  border-color: var(--social-danger);
+  animation: shake 420ms ease;
+}
+
+@keyframes otpIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes otpFill {
+  50% { transform: scale(1.12); }
+}
+
+.otpMeta {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 2px 0;
+  color: var(--ig-muted);
+  font-size: 13px;
+}
+
+.devCodeHint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px dashed var(--ig-border);
+  border-radius: 10px;
+  background: var(--ig-input-bg);
+  color: var(--ig-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  animation: fadeUp 360ms var(--ig-ease) both;
+}
+
+.devCodeHint code {
+  color: var(--ig-text);
+  font-weight: 700;
+}
+
+/* ---------- Register extras ---------- */
+
+.authProgress {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: -8px 0 18px;
+}
+
+.authProgress span {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--ig-elevated);
+  transition: width 300ms var(--ig-ease), background 300ms ease;
+}
+
+.authProgress span.isActive {
+  width: 24px;
+  background: var(--ig-gradient);
+}
+
+.authProgress span.isDone {
+  background: var(--ig-blue);
+}
+
+.authSuggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 2px;
+}
+
+.authSuggestions button {
+  padding: 3px 10px;
+  border: 1px solid var(--ig-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--ig-text);
+  font-size: 12px;
+  cursor: pointer;
+  animation: fadeUp 300ms var(--ig-ease) both;
+  transition: background 150ms ease;
+}
+
+.authSuggestions button:hover { background: var(--ig-surface-hover); }
+
+.authTerms {
+  margin: 12px 0 4px;
+  color: var(--ig-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.authAvatarPicker {
+  position: relative;
+  display: block;
+  width: 132px;
+  height: 132px;
+  margin: 8px auto 18px;
+  cursor: pointer;
+}
+
+.authAvatarPicker img,
+.authAvatarPlaceholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authAvatarPicker .igRing {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  animation: ringSpin 3s linear infinite;
+  background-size: 200% 200%;
+}
+
+.authAvatarPicker .igRing img {
+  border: 4px solid var(--ig-surface);
+}
+
+.authAvatarPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--ig-border);
+  color: var(--ig-muted);
+  transition: border-color 200ms ease, transform 300ms var(--ig-ease-spring);
+}
+
+.authAvatarPicker:hover .authAvatarPlaceholder {
+  border-color: var(--ig-blue);
+  transform: scale(1.04);
+}
+
+.authAvatarPlaceholder svg { font-size: 44px; }
+
+.authAvatarBadge {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  display: flex;
+  padding: 6px;
+  border: 3px solid var(--ig-surface);
+  border-radius: 50%;
+  background: var(--ig-blue);
+  color: #fff;
+}
+
+.authAvatarBadge svg { font-size: 18px; }
+
+.authTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid var(--ig-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--ig-input-bg);
+  color: var(--ig-text);
+  font-size: 14px;
+  resize: none;
+}
+
+.authTextarea:focus { border-color: var(--ig-muted); }
+
+.authWelcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0 8px;
+  text-align: center;
+}
+
+.authWelcomeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 16px;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+  color: #fff;
+  animation: checkIn 700ms var(--ig-ease-spring) both;
+}
+
+.authWelcomeIcon svg { font-size: 48px; }
+
+@media (max-width: 875px) {
+  .authShowcase { display: none; }
+}
+
+@media (max-width: 450px) {
+  .authMain { align-items: flex-start; padding: 24px 0; }
+  .authCard { border-color: transparent; background: transparent; backdrop-filter: none; }
+  .authCardMain { padding: 24px 32px 12px; }
+}
+
+.authNotice {
+  margin: -8px 0 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--ig-unread);
+  color: var(--ig-text);
+  font-size: 13px;
+  text-align: center;
+  animation: fadeUp 360ms var(--ig-ease) both;
+}
+
+/* Honeypot: off-screen (not display:none, which some bots skip) and out of tab order. */
+.authHoneypot {
+  position: absolute !important;
+  left: -10000px !important;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.authHumanCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: -8px 0 16px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: var(--ig-elevated);
+  color: var(--ig-text);
+  font-size: 13px;
+  animation: fadeUp 300ms var(--ig-ease) both;
+}
+
+.authHumanCheck svg { color: #2ecc71; }

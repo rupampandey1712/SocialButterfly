@@ -21,5 +21,9 @@ namespace SocialMediaWeb.Services.Interfaces
         /// Converts an internal blob URL (e.g. Docker azurite endpoint) to a publicly accessible URL for clients.
         /// </summary>
         string? ToPublicUrl(string? blobUrl);
+
+        /// <summary>Uploads server-produced bytes (e.g. an AI-generated image) and returns the public URL.</summary>
+        Task<string> UploadBytesAsync(byte[] content, string fileName, string containerName) =>
+            throw new NotSupportedException();
     }
 }

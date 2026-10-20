@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SocialMediaWeb.Models
 {
@@ -13,6 +14,16 @@ namespace SocialMediaWeb.Models
         public User? User { get;set; }
 
         public DateTime? CreatedAt { get; set; }
+
+        /// <summary>Optional soundtrack (blob URL in the "music" container) played with the post.</summary>
+        [MaxLength(1000)]
+        public string? MusicPath { get; set; }
+
+        [MaxLength(120)]
+        public string? MusicTitle { get; set; }
+
+        [MaxLength(120)]
+        public string? MusicArtist { get; set; }
 
         public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 

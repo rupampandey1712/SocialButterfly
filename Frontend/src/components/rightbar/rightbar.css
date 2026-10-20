@@ -1,117 +1,91 @@
 .rightbar {
-  flex: 3.1;
-  min-width: 260px;
+  flex: 0 0 320px;
+  padding-left: 64px;
 }
 
 .rightbarWrapper {
   position: sticky;
-  top: 88px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 0;
+  top: 36px;
 }
 
-.birthdayContainer {
+.rightbarAccount,
+.rightbarSuggestion {
   display: flex;
   align-items: center;
-  padding: 16px;
-  border: 1px solid var(--social-border);
-  border-radius: 18px;
-  background: var(--social-panel);
-  box-shadow: var(--social-shadow);
+  gap: 12px;
 }
 
-.birthdayImg {
-  width: 40px;
-  height: 40px;
-  margin-right: 10px;
+.rightbarAccount {
+  margin-bottom: 24px;
 }
 
-.birthdayText {
-  color: var(--social-muted);
-  font-weight: 600;
+.rightbarAccountText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rightbarName {
+  overflow: hidden;
+  color: var(--ig-text);
   font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.rightbarAd {
-  width: 100%;
-  border-radius: 18px;
+.rightbarName:hover {
+  color: var(--ig-muted);
+}
+
+.rightbarSub {
+  color: var(--ig-muted);
+  font-size: 12px;
+}
+
+.rightbarSmall {
+  font-size: 12px;
+}
+
+.rightbarSmall.isRequested {
+  color: var(--ig-muted);
+  opacity: 1 !important;
+}
+
+.rightbarHeading {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.rightbarSuggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   margin: 0;
-  box-shadow: var(--social-shadow);
-}
-
-.rightbarTitle{
-    margin-bottom: 10px;
-}
-
-.rightbarFriendList {
   padding: 0;
-  margin: 0;
   list-style: none;
 }
 
-.rightbarTitle{
-  color: var(--social-text);
-  font-size: 16px;
-  font-weight: 900;
-  margin-bottom: 10px;
+.rightbarFooter {
+  margin-top: 32px;
+  color: #c7c7c7;
+  font-size: 12px;
+  text-transform: uppercase;
 }
 
-.rightbarInfo{
-  margin-bottom: 30px;
-  padding: 16px;
-  border: 1px solid var(--social-border);
-  border-radius: 18px;
-  background: var(--social-panel);
-  box-shadow: var(--social-shadow);
+@media (max-width: 1159px) {
+  .rightbar { display: none; }
 }
 
-.rightbarInfoItem{
-  margin-bottom: 10px;
+.rightbarSeeAll {
+  color: var(--ig-text);
+  font-size: 12px;
+  font-weight: 600;
 }
 
-.rightbarInfoKey{
-  font-weight: 850;
-  margin-right: 15px;
-  color: var(--social-muted);
-}
-
-.rightbarInfoValue{
-  font-weight: 300;
-}
-
-.rightbarFollowings{
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.rightbarFollowing{
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
-  cursor: pointer;
-  width: 31%;
-}
-
-.rightbarFollowingImg{
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 14px;
-  box-shadow: 0 10px 22px rgba(21, 32, 51, 0.12);
-}
-
-.rightbarFollowingName {
-  margin-top: 8px;
-  color: var(--social-muted);
-  font-size: 13px;
-  font-weight: 750;
-}
-
-@media screen and (max-width: 1100px) {
-  .rightbar {
-    display: none;
-  }
-}
+.rightbarSeeAll:hover { color: var(--ig-muted); }

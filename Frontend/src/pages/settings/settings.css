@@ -1,0 +1,414 @@
+.settingsPage {
+  display: flex;
+  max-width: 935px;
+  min-height: 100vh;
+  margin: 0 auto;
+}
+
+.settingsNav {
+  flex: 0 0 280px;
+  padding: 32px 16px;
+  border-right: 1px solid var(--ig-border-soft);
+}
+
+.settingsNav h1 {
+  margin: 0 12px 20px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.settingsNavItem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--ig-text);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease;
+}
+
+.settingsNavItem:hover { background: var(--ig-surface-hover); }
+
+.settingsNavItem.isActive {
+  background: var(--ig-elevated);
+  font-weight: 600;
+}
+
+.settingsNavItem.isActive::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--ig-gradient);
+  animation: checkIn 300ms var(--ig-ease-spring) both;
+}
+
+.settingsContent {
+  flex: 1;
+  min-width: 0;
+  padding: 40px 48px;
+  animation: stepIn 360ms var(--ig-ease) both;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: none; }
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 560px;
+}
+
+.settingsSection h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.settingsLead {
+  margin: -8px 0 0;
+  color: var(--ig-muted);
+  font-size: 14px;
+}
+
+.settingsAvatarCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 20px;
+  background: var(--ig-elevated);
+}
+
+.settingsAvatarCard > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.settingsAvatarCard > div span { color: var(--ig-muted); }
+
+.settingsAvatar {
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  transition: transform 260ms var(--ig-ease-spring);
+}
+
+.settingsAvatar:hover { transform: scale(1.06); }
+
+.settingsAvatar img {
+  width: 56px;
+  height: 56px;
+}
+
+.settingsField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.settingsField > span {
+  font-weight: 600;
+}
+
+.settingsField input,
+.settingsField textarea,
+.settingsInputWrap {
+  width: 100%;
+  border: 1px solid var(--ig-border);
+  border-radius: 12px;
+  background: var(--ig-surface);
+  color: var(--ig-text);
+  font-size: 14px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.settingsField input,
+.settingsField textarea {
+  padding: 12px 14px;
+  outline: 0;
+  resize: none;
+}
+
+.settingsField input:focus,
+.settingsField textarea:focus,
+.settingsInputWrap:focus-within {
+  border-color: var(--ig-muted);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ig-blue) 12%, transparent);
+}
+
+.settingsInputWrap {
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.settingsInputWrap input {
+  flex: 1;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+}
+
+.settingsInputWrap.is-invalid,
+.settingsInputWrap.is-taken { border-color: var(--social-danger); }
+
+.settingsOk { color: #2ecc71; animation: adornPop 320ms var(--ig-ease-spring); }
+.settingsBad { color: var(--social-danger); animation: adornPop 320ms var(--ig-ease-spring); }
+
+@keyframes adornPop {
+  from { opacity: 0; transform: scale(0.3) rotate(-30deg); }
+  to { opacity: 1; transform: none; }
+}
+
+.settingsField small {
+  color: var(--ig-muted);
+  font-size: 12px;
+}
+
+.settingsField small.isError { color: var(--social-danger); }
+
+.settingsSubmit {
+  align-self: flex-start;
+  min-width: 140px;
+  min-height: 40px;
+}
+
+.settingsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid var(--ig-border-soft);
+  border-radius: 16px;
+}
+
+.settingsCard h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settingsBadge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  animation: checkIn 360ms var(--ig-ease-spring) both;
+}
+
+.settingsBadge.isVerified {
+  background: color-mix(in srgb, #2ecc71 16%, transparent);
+  color: #1f9d55;
+}
+
+.settingsBadge.isPending {
+  background: color-mix(in srgb, #f5a623 18%, transparent);
+  color: #c47f00;
+  cursor: pointer;
+}
+
+.settingsBadge.isPending:hover { filter: brightness(0.95); }
+
+/* ---------- Toggles ---------- */
+
+.settingsToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+.settingsToggleRow > span:first-child {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.settingsToggleRow small {
+  color: var(--ig-muted);
+  font-size: 12px;
+}
+
+.settingsSwitch {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 26px;
+  border-radius: 13px;
+  background: var(--ig-elevated-hover);
+  transition: background 220ms ease;
+}
+
+.settingsSwitch input {
+  position: absolute;
+  opacity: 0;
+}
+
+.settingsSwitch.isOn { background: var(--ig-text); }
+
+.settingsSwitchThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--ig-surface);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 260ms var(--ig-ease-spring);
+}
+
+.settingsSwitch.isOn .settingsSwitchThumb { transform: translateX(18px); }
+.settingsSwitch input:focus-visible + .settingsSwitchThumb { outline: 2px solid var(--ig-blue); }
+
+/* ---------- Appearance ---------- */
+
+.themeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.themeCard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 2px solid var(--ig-border-soft);
+  border-radius: 16px;
+  background: none;
+  color: var(--ig-text);
+  cursor: pointer;
+  transition: border-color 200ms ease, transform 260ms var(--ig-ease-spring);
+}
+
+.themeCard:hover { transform: translateY(-3px); }
+.themeCard.isActive { border-color: var(--ig-blue); }
+
+.themePreview {
+  display: flex;
+  gap: 6px;
+  height: 96px;
+  padding: 8px;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.preview-light { background: #fafafa; --p-surface: #fff; --p-line: #dbdbdb; }
+.preview-dark { background: #000; --p-surface: #121212; --p-line: #363636; }
+.preview-system { background: linear-gradient(110deg, #fafafa 50%, #000 50%); --p-surface: #8a8a8a33; --p-line: #8a8a8a66; }
+
+.themePreviewNav {
+  width: 14px;
+  border-radius: 4px;
+  background: var(--p-line);
+}
+
+.themePreviewCard {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 6px;
+  background: var(--p-surface);
+}
+
+.themePreviewAvatar {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+}
+
+.themePreviewLine {
+  width: 60%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--p-line);
+}
+
+.themePreviewMedia {
+  flex: 1;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #fa7e1e55, #962fbf55);
+}
+
+.themeLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.themeLabel svg { font-size: 18px; }
+.themeCheck { margin-left: auto; color: var(--ig-blue); animation: checkIn 360ms var(--ig-ease-spring); }
+
+/* ---------- Verify modal ---------- */
+
+.verifyModal {
+  width: min(420px, calc(100vw - 32px));
+}
+
+.verifyModalBody {
+  padding: 28px 24px 24px;
+  text-align: center;
+}
+
+.verifyModalBody h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.verifyModalBody p {
+  color: var(--ig-muted);
+  font-size: 14px;
+}
+
+@media (max-width: 767px) {
+  .settingsPage { flex-direction: column; }
+  .settingsNav {
+    display: flex;
+    flex: none;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--ig-border-soft);
+  }
+  .settingsNav h1 { display: none; }
+  .settingsNavItem { flex-shrink: 0; width: auto; }
+  .settingsNavItem.isActive::before { display: none; }
+  .settingsContent { padding: 24px 16px; }
+  .themeGrid { grid-template-columns: 1fr; }
+}

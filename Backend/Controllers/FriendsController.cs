@@ -1,21 +1,25 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SocialMediaWeb.Dtos;
-using SocialMediaWeb.Models;
+using SocialMediaWeb.Services.Classes;
 using SocialMediaWeb.Services.Interfaces;
 
 namespace SocialMediaWeb.Controllers
 {
+    /// <summary>
+    /// Mutual friendships. The signed-in user (from the JWT) is always one side of any
+    /// change, and pending requests are only visible to their receiver.
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class FriendsController : ControllerBase
     {
         private readonly IFriendService _friend;
+        private readonly IBlobStorageService _blobStorage;
 
-        public FriendsController(IFriendService friend)
+        public FriendsController(IFriendService friend, IBlobStorageService blobStorage)
         {
             _friend = friend;
+            _blobStorage = blobStorage;
         }
 
         [HttpPost]
@@ -23,6 +27,7 @@ namespace SocialMediaWeb.Controllers
         {
             try
             {
+                friends.SenderId = User.RequireUserId();
                 var friend = await _friend.SendFriendRequest(friends);
                 return Ok(friend);
             }
@@ -32,12 +37,13 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpPost("{senderId}")]
-        public async Task<ActionResult<FriendDto>> AcceptFriendRequest(int senderId, [FromQuery] int? receiverId = null)
+        /// <summary>Accepts a request <paramref name="senderId"/> sent to the signed-in user.</summary>
+        [HttpPost("{senderId:int}")]
+        public async Task<ActionResult<FriendDto>> AcceptFriendRequest(int senderId)
         {
             try
             {
-                var friend = await _friend.AcceptFriendRequest(senderId, receiverId);
+                var friend = await _friend.AcceptFriendRequest(senderId, User.RequireUserId());
                 return Ok(friend);
             }
             catch (Exception ex)
@@ -46,23 +52,28 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpPost("{senderId}/{receiverId}")]
+        /// <summary>Kept for older clients; the receiver must be the signed-in user.</summary>
+        [HttpPost("{senderId:int}/{receiverId:int}")]
         public async Task<ActionResult<FriendDto>> AcceptFriendRequestWithReceiver(int senderId, int receiverId)
         {
-            try
+            if (receiverId != User.RequireUserId())
             {
-                var friend = await _friend.AcceptFriendRequest(senderId, receiverId);
-                return Ok(friend);
+                return Forbid();
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+
+            return await AcceptFriendRequest(senderId);
         }
 
-        [HttpDelete("{senderId}/{receiverId}")]
+        /// <summary>Declines, cancels or removes a friendship. The signed-in user must be one side of it.</summary>
+        [HttpDelete("{senderId:int}/{receiverId:int}")]
         public async Task<IActionResult> DeleteOrDeclineFriendRequest(int senderId, int receiverId)
         {
+            var currentUserId = User.RequireUserId();
+            if (currentUserId != senderId && currentUserId != receiverId)
+            {
+                return Forbid();
+            }
+
             try
             {
                 var deleted = await _friend.DeleteOrDeclineFriendRequest(senderId, receiverId);
@@ -74,13 +85,26 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpGet("status/{user1:int}/{user2:int}")]
-        public async Task<IActionResult> GetFriendshipStatus(int user1, int user2)
+        /// <summary>Status between the signed-in user and <paramref name="otherUserId"/>.</summary>
+        [HttpGet("status/{otherUserId:int}")]
+        public async Task<IActionResult> GetFriendshipStatus(int otherUserId)
+        {
+            var status = await _friend.GetFriendshipStatus(User.RequireUserId(), otherUserId);
+            return Ok(new { status });
+        }
+
+        [HttpGet("{userId:int}/friends")]
+        public async Task<ActionResult<IEnumerable<PostAuthorDto>>> GetAllFriends(int userId)
         {
             try
             {
-                var status = await _friend.GetFriendshipStatus(user1, user2);
-                return Ok(new { status });
+                // Project to public fields only: the service returns full User entities
+                // (password hash, email, phone), which must never be serialized.
+                var result = await _friend.GetFriends(userId);
+                var friends = (result.Value ?? Enumerable.Empty<SocialMediaWeb.Models.User>())
+                    .Select(u => new PostAuthorDto { Id = u.Id, Name = u.Name, ImagePath = _blobStorage.ToPublicUrl(u.ImagePath) })
+                    .ToList();
+                return Ok(friends);
             }
             catch (Exception ex)
             {
@@ -88,12 +112,27 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpGet("{userId}/friends")]
-        public async Task<ActionResult<FriendDto>> GetAllFriends(int userId)
+        /// <summary>Number of pending requests for the signed-in user.</summary>
+        [HttpGet("me/requests")]
+        public async Task<ActionResult<FriendDto>> Requests()
+        {
+            return Ok(await _friend.GetRequest(User.RequireUserId()));
+        }
+
+        /// <summary>People who sent the signed-in user a request.</summary>
+        [HttpGet("me/requestuser")]
+        public async Task<ActionResult<FriendDto>> RequestUser()
+        {
+            return Ok(await _friend.GetUserRequest(User.RequireUserId()));
+        }
+
+        /// <summary>Friends of any member (shown on profiles).</summary>
+        [HttpGet("{userId:int}/myfriends")]
+        public async Task<ActionResult<FriendDto>> MyFriends(int userId)
         {
             try
             {
-                var friend = await _friend.GetFriends(userId);
+                var friend = await _friend.GetMyFriends(userId);
                 return Ok(friend);
             }
             catch (Exception ex)
@@ -102,54 +141,12 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpGet("{receiver}/requests")]
-        public async Task<ActionResult<FriendDto>> Requests(int receiver)
+        [HttpGet("{userId:int}/friendscount")]
+        public async Task<ActionResult<FriendDto>> MyFriendsCount(int userId)
         {
             try
             {
-                var friend = await _friend.GetRequest(receiver);
-                return Ok(friend);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("{receiver}/requestuser")]
-        public async Task<ActionResult<FriendDto>> RequestUser(int receiver)
-        {
-            try
-            {
-                var friend = await _friend.GetUserRequest(receiver);
-                return Ok(friend);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("{receiver}/myfriends")]
-        public async Task<ActionResult<FriendDto>> MyFriends(int receiver)
-        {
-            try
-            {
-                var friend = await _friend.GetMyFriends(receiver);
-                return Ok(friend);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpGet("{receiver}/friendscount")]
-        public async Task<ActionResult<FriendDto>> MyFriendsCount(int receiver)
-        {
-            try
-            {
-                var friend = await _friend.FriendsCount(receiver);
+                var friend = await _friend.FriendsCount(userId);
                 return Ok(friend);
             }
             catch (Exception ex)

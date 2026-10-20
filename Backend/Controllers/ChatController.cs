@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SocialMediaWeb.Dtos;
+using SocialMediaWeb.Services.Classes;
 using SocialMediaWeb.Services.Interfaces;
 using System.Security.Claims;
 
@@ -87,9 +88,5 @@ public sealed class ChatController : ControllerBase
         return Ok(new { markedRead = updated });
     }
 
-    private int? GetCurrentUserId()
-    {
-        var claim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        return int.TryParse(claim, out var userId) ? userId : null;
-    }
+    private int? GetCurrentUserId() => User.GetUserId();
 }

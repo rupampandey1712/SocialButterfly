@@ -31,6 +31,8 @@ namespace SocialMediaWeb.Controllers
 
             try
             {
+                // Posts are always authored by the signed-in user.
+                postCreateDto.UserId = User.RequireUserId();
                 var post = await _post.CreatePostAsync(postCreateDto);
                 return Ok(post);
             }
@@ -74,17 +76,19 @@ namespace SocialMediaWeb.Controllers
                 return BadRequest(ModelState);
             }
 
-            var comment = await _comment.CreateCommentAsync(commentCreateDto);
+            commentCreateDto.UserId = User.RequireUserId();
+            var comment = await _comment.AddCommentAsync(commentCreateDto);
 
-            return Ok( new { id = comment.Id,comment });
+            return Ok(new { id = comment.Id, comment });
         }
 
         [HttpGet("UserPost")]
-        public async Task<ActionResult<IEnumerable<SocialMediaPost>>> UserPost()
+        public async Task<ActionResult<IEnumerable<PostFeedDto>>> UserPost()
         {
             try
             {
-                var post = await _post.AllPost();
+                // Projected DTOs: the old entity graph serialized authors' password hashes.
+                var post = await _post.GetFeedAsync(User.GetUserId(), 0, 50);
                 return Ok(post);
             }
             catch
@@ -93,18 +97,45 @@ namespace SocialMediaWeb.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<SocialMediaPost>>> GetSingleUser(int id)
+        [HttpGet("feed")]
+        public async Task<ActionResult<IEnumerable<PostFeedDto>>> Feed([FromQuery] int skip = 0, [FromQuery] int take = 20)
+        {
+            var posts = await _post.GetFeedAsync(User.GetUserId(), skip, take);
+            return Ok(posts);
+        }
+
+        [HttpGet("user/{userId:int}")]
+        public async Task<ActionResult<IEnumerable<PostFeedDto>>> PostsByUser(int userId)
+        {
+            var posts = await _post.GetUserPostsAsync(userId, User.GetUserId());
+            return Ok(posts);
+        }
+
+        [HttpGet("details/{postId:int}")]
+        public async Task<ActionResult<PostFeedDto>> PostDetails(int postId)
+        {
+            var post = await _post.GetPostAsync(postId, User.GetUserId());
+            return post == null ? NotFound() : Ok(post);
+        }
+
+        [HttpDelete("{postId:int}")]
+        public async Task<IActionResult> DeletePost(int postId)
         {
             try
             {
-                var post = await _post.GetUserpost(id);
-                return Ok(post);
+                var deleted = await _post.DeletePostAsync(postId, User.RequireUserId());
+                return deleted ? NoContent() : NotFound();
             }
-            catch
+            catch (UnauthorizedAccessException ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
             }
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<IEnumerable<PostFeedDto>>> GetSingleUser(int id)
+        {
+            return Ok(await _post.GetUserPostsAsync(id, User.GetUserId()));
         }
     }
 }

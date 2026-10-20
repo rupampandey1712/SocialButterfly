@@ -1,0 +1,473 @@
+.storyViewer {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a1a;
+  color: #fff;
+  animation: storyViewerIn 260ms var(--ig-ease) both;
+}
+
+.storyViewer.isClosing {
+  animation: storyViewerOut 220ms ease forwards;
+}
+
+@keyframes storyViewerIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes storyViewerOut {
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+.storyViewerLogo {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+}
+
+.storyViewerLogo .appLogoName { color: #fff; }
+
+.storyViewerClose {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  z-index: 3;
+  display: flex;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 220ms var(--ig-ease-spring);
+}
+
+.storyViewerClose:hover { transform: rotate(90deg) scale(1.1); }
+.storyViewerClose svg { font-size: 32px; }
+
+.storyStage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  width: 100%;
+  height: 100%;
+  perspective: 1400px;
+}
+
+/* ---------- Main card ---------- */
+
+.storyCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: min(94vh, 880px);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #000;
+  transform-style: preserve-3d;
+}
+
+.storyCard.enter-next { animation: cubeInNext 480ms var(--ig-ease) both; }
+.storyCard.enter-prev { animation: cubeInPrev 480ms var(--ig-ease) both; }
+
+@keyframes cubeInNext {
+  from { opacity: 0.3; transform: translateX(45%) rotateY(-50deg) scale(0.86); transform-origin: left center; }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes cubeInPrev {
+  from { opacity: 0.3; transform: translateX(-45%) rotateY(50deg) scale(0.86); transform-origin: right center; }
+  to { opacity: 1; transform: none; }
+}
+
+.storyProgress {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  left: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+}
+
+.storyProgressTrack {
+  flex: 1;
+  height: 2.5px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.storyProgressFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.storyProgressFill.isDone { transform: scaleX(1); }
+
+.storyProgressFill.isActive {
+  animation-name: storyProgress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@keyframes storyProgress {
+  to { transform: scaleX(1); }
+}
+
+.storyHeader {
+  position: absolute;
+  top: 22px;
+  right: 8px;
+  left: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.storyAuthor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.storyAuthor time {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.storyControls {
+  display: flex;
+}
+
+.storyControls button {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+  transition: transform 150ms ease;
+}
+
+.storyControls button:active { transform: scale(0.85); }
+
+.storyMedia {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.storyMedia::before,
+.storyMedia::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.storyMedia::before { top: 0; height: 120px; background: linear-gradient(rgba(0, 0, 0, 0.55), transparent); }
+.storyMedia::after { bottom: 0; height: 140px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.55)); }
+
+.storyMedia img,
+.storyMedia video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 300ms ease, transform 5s ease-out;
+}
+
+.storyMedia img.isLoaded,
+.storyMedia video.isLoaded {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.storySpinner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.storyCaption {
+  position: absolute;
+  right: 16px;
+  bottom: 24px;
+  left: 16px;
+  z-index: 2;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  animation: fadeUp 400ms var(--ig-ease) 200ms both;
+}
+
+.storyPausedBadge {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  padding: 14px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  animation: checkIn 300ms var(--ig-ease-spring) both;
+}
+
+.storyPausedBadge svg { font-size: 36px; }
+
+.storyFooter {
+  position: relative;
+  z-index: 3;
+  padding: 10px 12px 14px;
+  background: #000;
+}
+
+.storyReply {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.storyReply input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 22px;
+  outline: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 160ms ease;
+}
+
+.storyReply input::placeholder { color: rgba(255, 255, 255, 0.8); }
+.storyReply input:focus { border-color: #fff; }
+
+.storyReply button {
+  display: flex;
+  padding: 6px;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 200ms var(--ig-ease-spring);
+}
+
+.storyReply button:active { transform: scale(0.8); }
+.storyReply button svg { font-size: 28px; }
+.storyReply button.isLiked { color: var(--ig-red); animation: heartPop 450ms var(--ig-ease-spring); }
+
+.storySeenBy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 4px;
+  border: 0;
+  background: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.storyNav {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  padding: 2px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: #000;
+  opacity: 0;
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.storyCard:hover .storyNav { opacity: 1; }
+.storyNav:hover { transform: translateY(-50%) scale(1.1); }
+.storyNav.isPrev { left: 8px; }
+.storyNav.isNext { right: 8px; }
+
+/* ---------- Viewers sheet (own story) ---------- */
+
+.storyViewersSheet {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  max-height: 60%;
+  border-radius: 16px 16px 0 0;
+  background: var(--ig-surface);
+  color: var(--ig-text);
+  animation: sheetIn 320ms var(--ig-ease) both;
+}
+
+.storyViewersSheet header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ig-border-soft);
+}
+
+.storyViewersSheet header button {
+  display: flex;
+  border: 0;
+  background: none;
+  color: var(--ig-text);
+  cursor: pointer;
+}
+
+.storyViewersList {
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.storyViewersList p {
+  padding: 24px;
+  color: var(--ig-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.storyViewerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  color: var(--ig-text);
+}
+
+.storyViewerRow:hover { background: var(--ig-surface-hover); }
+
+.storyViewerRow span {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.storyViewerRow time {
+  color: var(--ig-muted);
+  font-size: 12px;
+}
+
+/* ---------- Side previews (desktop) ---------- */
+
+.storyPreview {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform 300ms var(--ig-ease), opacity 300ms ease;
+  animation: fadeIn 400ms ease 150ms both;
+}
+
+.storyPreview:hover { transform: scale(1.04); }
+
+.storyPreviewCard {
+  position: relative;
+  display: block;
+  height: min(42vh, 380px);
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #000;
+}
+
+.storyPreviewCard img,
+.storyPreviewCard video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.55);
+}
+
+.storyPreviewInfo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.storyPreviewInfo time {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+}
+
+.storyPreviewRing {
+  display: flex;
+  padding: 2px;
+  border-radius: 50%;
+  background: var(--ig-gradient);
+}
+
+.storyPreviewRing.isSeen { background: rgba(255, 255, 255, 0.5); }
+
+.storyPreviewRing img {
+  width: 56px;
+  height: 56px;
+  border: 2px solid #000;
+  filter: none;
+}
+
+@media (max-width: 1100px) {
+  .storyPreview { display: none; }
+}
+
+@media (max-width: 600px) {
+  .storyViewerLogo { display: none; }
+  .storyCard { height: 100%; width: 100%; aspect-ratio: auto; border-radius: 0; }
+  .storyViewerClose { top: 26px; right: 8px; }
+  .storyHeader { right: 44px; }
+  .storyNav { display: none; }
+}
+
+/* Story soundtrack chip sits under the header, like Instagram's music sticker. */
+.storyMedia .soundtrackChip {
+  top: 64px;
+  left: 12px;
+}

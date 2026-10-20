@@ -9,8 +9,21 @@ const apiOrigin = (
   ""
 ).replace(/\/$/, "");
 
+// Same hardening headers the API sends (CSP is applied by the API/nginx in production;
+// Vite's dev server needs inline scripts for hot reload).
+const securityHeaders = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+};
+
 export default defineConfig({
+  preview: {
+    headers: securityHeaders,
+  },
   server: {
+    headers: securityHeaders,
     proxy: {
       "/api": {
         target: apiOrigin || "http://localhost:8080",
@@ -27,6 +40,22 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      // Local media folders served by the FastAPI backend (the .NET API serves these from blob storage).
+      "/stories": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/music": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/ai-images": {
+        target: apiOrigin || "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   plugins: [
@@ -38,7 +67,10 @@ export default defineConfig({
           return null;
         }
 
-        return code.replaceAll("https://localhost:7151", apiOrigin);
+        // Legacy absolute URLs become same-origin paths: the session cookie is SameSite=Strict
+        // and HttpOnly, so the browser must reach the API through this proxy (or nginx/app in
+        // Docker), never cross-origin. VITE_API_ORIGIN only sets where the proxy forwards.
+        return code.replaceAll("https://localhost:7151", "");
       },
     },
     {

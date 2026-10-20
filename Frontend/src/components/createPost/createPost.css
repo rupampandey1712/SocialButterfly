@@ -1,0 +1,211 @@
+.createPost {
+  display: flex;
+  flex-direction: column;
+  width: min(560px, calc(100vw - 48px));
+  transition: width 360ms var(--ig-ease);
+}
+
+.createPost.isDetails {
+  width: min(900px, calc(100vw - 48px));
+}
+
+.createPostHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ig-border-soft);
+}
+
+.createPostHeader h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.createPostHeaderSpacer {
+  width: 42px;
+}
+
+.createPostDrop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: min(560px, 70vh);
+  padding: 24px;
+  transition: background 200ms ease;
+}
+
+.createPostDrop.isDragging {
+  background: var(--ig-unread);
+}
+
+.createPostDropIcon {
+  font-size: 84px !important;
+  color: var(--ig-text);
+  transition: transform 300ms var(--ig-ease-spring);
+}
+
+.createPostDrop.isDragging .createPostDropIcon {
+  transform: scale(1.15) rotate(-6deg);
+  color: var(--ig-blue);
+}
+
+.createPostDrop p {
+  margin: 0;
+  font-size: 20px;
+}
+
+.createPostTextOnly {
+  font-size: 13px;
+}
+
+.createPostDetails {
+  display: flex;
+  height: min(560px, 70vh);
+  animation: fadeIn 300ms ease both;
+}
+
+.createPostPreview {
+  display: flex;
+  flex: 1 1 60%;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  background: #000;
+}
+
+.createPostPreview img,
+.createPostPreview video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  animation: previewIn 420ms var(--ig-ease) both;
+}
+
+@keyframes previewIn {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+.createPostCaption {
+  display: flex;
+  flex: 1 1 40%;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
+  border-left: 1px solid var(--ig-border-soft);
+}
+
+.createPostAuthor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.createPostCaption textarea {
+  flex: 1;
+  border: 0;
+  outline: 0;
+  resize: none;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.createPostCount {
+  align-self: flex-end;
+  color: #c7c7c7;
+  font-size: 12px;
+}
+
+.createPostStatus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  height: min(560px, 70vh);
+}
+
+.createPostStatus p {
+  margin: 0;
+  font-size: 20px;
+}
+
+.createPostRing {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: conic-gradient(#feda75, #fa7e1e, #d62976, #962fbf, #4f5bd5, #feda75);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 5px));
+  animation: spin 1s linear infinite;
+}
+
+.createPostRing.isDone {
+  background: var(--ig-gradient);
+  color: #fff;
+  -webkit-mask: none;
+  mask: none;
+  animation: checkIn 600ms var(--ig-ease-spring) both;
+}
+
+.createPostRing.isDone svg {
+  font-size: 56px;
+}
+
+@media (max-width: 767px) {
+  .createPost,
+  .createPost.isDetails { width: 100%; }
+  .createPostDetails { flex-direction: column; height: 80vh; }
+  .createPostPreview { flex: 0 0 50%; }
+  .createPostCaption { border-left: 0; border-top: 1px solid var(--ig-border-soft); }
+}
+
+.createPostRingWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.createPostPercent {
+  position: absolute;
+  color: var(--ig-text);
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.createPostSongFields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+  animation: fadeUp 320ms var(--ig-ease) both;
+}
+
+.createPostSongFields input {
+  padding: 10px 12px;
+  border: 1px solid var(--ig-border);
+  border-radius: 10px;
+  outline: 0;
+  background: var(--ig-input-bg);
+  color: var(--ig-text);
+  font-size: 14px;
+}
+
+.createPostSongFields input:focus { border-color: var(--ig-muted); }
+
+.createPostPreview .musicPlayer {
+  width: 100%;
+  height: 100%;
+}

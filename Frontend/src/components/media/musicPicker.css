@@ -1,0 +1,125 @@
+.musicPicker {
+  margin-top: 12px;
+  animation: fadeUp 320ms var(--ig-ease) both;
+}
+
+.musicPickerAdd {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px dashed var(--ig-border);
+  border-radius: 12px;
+  background: none;
+  color: var(--ig-text);
+  text-align: left;
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, transform 200ms var(--ig-ease-spring);
+}
+
+.musicPickerAdd:hover {
+  border-color: #962fbf;
+  background: var(--ig-surface-hover);
+  transform: translateY(-1px);
+}
+
+.musicPickerAdd > span:last-child {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.musicPickerAdd small {
+  color: var(--ig-muted);
+  font-size: 12px;
+}
+
+.musicPickerIcon {
+  display: flex;
+  padding: 8px;
+  border-radius: 10px;
+  background: var(--ig-gradient);
+  color: #fff;
+}
+
+.musicPickerSelected {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--ig-elevated);
+  animation: checkIn 360ms var(--ig-ease-spring) both;
+}
+
+.musicPickerPlay {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: conic-gradient(#d62976 var(--progress), transparent 0), var(--ig-gradient);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 200ms var(--ig-ease-spring);
+}
+
+.musicPickerPlay::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #962fbf;
+}
+
+.musicPickerPlay svg { position: relative; z-index: 1; }
+.musicPickerPlay:active { transform: scale(0.88); }
+.musicPickerPlay.isPlaying { animation: musicPulse 1.4s ease-in-out infinite; }
+
+@keyframes musicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(214, 41, 118, 0.45); }
+  50% { box-shadow: 0 0 0 8px rgba(214, 41, 118, 0); }
+}
+
+.musicPickerFields {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.musicPickerFields input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  border-radius: 6px;
+  outline: 0;
+  background: transparent;
+  color: var(--ig-text);
+  font-size: 13px;
+}
+
+.musicPickerFields input:first-child { font-weight: 600; }
+.musicPickerFields input:focus { background: var(--ig-surface); }
+
+.musicPickerRemove {
+  display: flex;
+  padding: 4px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--ig-muted);
+  cursor: pointer;
+  transition: transform 200ms var(--ig-ease-spring), color 160ms ease;
+}
+
+.musicPickerRemove:hover { color: var(--social-danger); transform: rotate(90deg); }
+
+.musicPicker.isCompact .musicPickerAdd small { display: none; }

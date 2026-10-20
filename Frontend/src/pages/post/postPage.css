@@ -1,0 +1,41 @@
+.postPage {
+  max-width: 935px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.postPageCard {
+  overflow: hidden;
+  border: 1px solid var(--ig-border);
+  border-radius: 4px;
+  background: var(--ig-surface);
+}
+
+.postPageCard .postDetail {
+  height: min(80vh, 600px);
+}
+
+.postPageSkeleton {
+  height: min(80vh, 600px);
+}
+
+.postPageMissing {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.postPageMissing h2 {
+  margin-bottom: 16px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.postPageMissing p {
+  color: var(--ig-muted);
+}
+
+@media (max-width: 767px) {
+  .postPage { padding: 0; }
+  .postPageCard { border: 0; border-radius: 0; }
+  .postPageCard .postDetail { height: auto; min-height: calc(100vh - 116px); }
+}
