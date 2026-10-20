@@ -1,5 +1,6 @@
 import { defineConfig, transformWithEsbuild, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const sourceFilePattern = /[\\/]src[\\/].*\.[jt]sx?$/;
 const jsSourceFilePattern = /[\\/]src[\\/].*\.js$/;
@@ -87,6 +88,7 @@ export default defineConfig({
       },
     },
     react(),
+    tailwindcss(),
   ],
   optimizeDeps: {
     esbuildOptions: {

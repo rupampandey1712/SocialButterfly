@@ -1,8 +1,20 @@
 /* src/tailwind.css */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* Keep the v3 JS config (Material Tailwind theme via withMT). */
+@config "../tailwind.config.js";
+
+/* Tailwind v4 defaults borders to currentColor; keep the v3 default (gray-200). */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: --theme(--color-gray-200);
+  }
+}
 
 :root {
   --social-bg: #fafafa;
